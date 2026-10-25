@@ -3,7 +3,20 @@
 @section('title', 'Log in')
 
 @section('content')
+    <style>
+        .btn {
+            background: #ffd83d;
+            color: #14260a;
+            border: 3px solid #ffd83d;
+        }
+        .btn:hover {
+            background: #ffe27a;
+            border-color: #ffe27a;
+        }
+    </style>
+
     <h1>Log in</h1>
+    ...
 
     {{-- The form sends a POST request to the 'login' route. --}}
     <form method="POST" action="{{ route('login') }}">

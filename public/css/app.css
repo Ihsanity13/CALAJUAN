@@ -343,20 +343,23 @@ tbody tr:hover {
     cursor: pointer;
 }
 
-/* ---- Home page: hero ---- */
+/* ---- Home page: hero ----
+   The pineapple sits in the bottom-right corner of the hero, tilted to the left,
+   with only its top half (the leaves and upper fruit) showing. */
 .hero {
+    position: relative;
+    overflow: hidden;              /* crops the pineapple at the bottom edge */
     padding: clamp(32px, 7vw, 88px) clamp(16px, 4vw, 40px);
     background: var(--leaf);
     color: #fff;
 }
 
 .hero-inner {
-    display: grid;
-    grid-template-columns: 1.3fr 0.7fr;
-    align-items: center;
-    gap: 32px;
+    position: relative;
+    z-index: 1;                    /* keeps the text above the pineapple */
     max-width: 1080px;
     margin: 0 auto;
+    padding-right: 340px;          /* room so text never runs under the pineapple */
 }
 
 .hero h1 {
@@ -380,21 +383,27 @@ tbody tr:hover {
 }
 
 .hero-art {
-    width: 100%;
-    max-width: 280px;
-    justify-self: center;
+    position: absolute;
+    bottom: 0;
+    right: -140px;                 /* sits in the very corner; closer to 0 = more of it on screen */
+    width: 430px;
+    max-width: none;
+    /* translateY(50%) sinks half the pineapple below the edge;
+       rotate(-14deg) tilts it left (use a positive number to tilt right) */
+    transform: translateY(50%) rotate(-14deg);
 }
 
-/* On phones: one column, with the small pineapple above the text */
+/* On phones: smaller and faded, peeking up from the bottom edge behind the text */
 @media (max-width: 760px) {
     .hero-inner {
-        grid-template-columns: 1fr;
+        padding-right: 0;
     }
 
     .hero-art {
-        order: -1;
-        max-width: 140px;
-        justify-self: start;
+        right: -60px;
+        width: 200px;
+        transform: translateY(50%) rotate(-14deg);
+        opacity: 0.35;
     }
 }
 
