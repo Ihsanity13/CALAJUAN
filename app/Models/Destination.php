@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -31,6 +32,15 @@ class Destination extends Model
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
         ];
+    }
+
+    // QUERY SCOPE: a reusable, named piece of a query.
+    // Destination::featured() means 'featured AND verified'.
+    // The word 'scope' in the method name is how Laravel recognizes it,
+    // and you call it without that word: ->featured()
+    public function scopeFeatured(Builder $query): Builder
+    {
+        return $query->where('is_featured', true)->where('is_verified', true);
     }
 
     // RELATIONSHIP: each destination belongs to one category.

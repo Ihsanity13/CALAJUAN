@@ -18,7 +18,7 @@ class Category extends Model
     public function destinations(): HasMany
     {
         return $this->hasMany(Destination::class);
-    }
+    }   
 
     // RELATIONSHIP: many users can like this category (many-to-many),
     // stored in the user_preferences pivot table.

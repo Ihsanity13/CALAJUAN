@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,17 +18,11 @@ class AuthController extends Controller
     }
 
     // Handle the submitted registration form
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        // VALIDATION: if any rule fails, Laravel sends the user back to the form
-        // with error messages, and the code below never runs.
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            // unique:users,email -> no two accounts can share an email
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            // confirmed -> must match a field named password_confirmation
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
+        // The rules live in RegisterRequest. Laravel runs them BEFORE this
+        // method starts, and sends the user back to the form if any rule fails.
+        $validated = $request->validated();
 
         // MODEL: create the user. Only the validated fields are passed in,
         // and 'role' isn't fillable, so new accounts always get the default 'user'.
@@ -48,12 +44,10 @@ class AuthController extends Controller
     }
 
     // Handle the submitted login form
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        // The rules live in LoginRequest. validated() returns only email and password.
+        $credentials = $request->validated();
 
         // Auth::attempt checks the email and password against the users table.
         // It compares against the hashed password for you.

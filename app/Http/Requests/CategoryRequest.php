@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Category;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Models\Category;
 
 // A FORM REQUEST holds the validation rules for one form, so the controller
 // stays short. Laravel runs these rules before the controller method starts.
@@ -27,7 +27,7 @@ class CategoryRequest extends FormRequest
             // unique: no two categories can share a name.
             // ignore($category): when editing, don't count the category
             // itself as a duplicate of its own name.
-                        'name' => [
+            'name' => [
                 // bail: stop at the first failed rule, so the check below
                 // never receives a value that isn't text
                 'bail',
