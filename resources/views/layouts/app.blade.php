@@ -8,6 +8,11 @@
     <meta name="theme-color" content="#2c4a2a">
     <title>@yield('title', 'Calajuan') · Calajuan</title>
 
+    {{-- TAB ICON: the pineapple "C" from the logo (public/images). apple-touch-icon = phone home screen. --}}
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-32.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('images/icon-512.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
+
     {{-- Fonts from Google. If you're offline, the page falls back to Georgia and your system font. --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,10 +25,13 @@
     @stack('styles')
 </head>
 
-{{-- $isAdmin / $isUser are worked out once here and reused by both navs below --}}
+{{-- $isAdmin / $isOwner / $isUser are worked out once here and reused by both navs below --}}
 @php
     $isAdmin = auth()->check() && auth()->user()->isAdmin();
-    $isUser = auth()->check() && ! $isAdmin;
+    $isOwner = auth()->check() && auth()->user()->isOwner();
+    $isUser = auth()->check() && ! $isAdmin && ! $isOwner;
+    // Admins: how many submissions wait, for the badge on the Approvals link
+    $approvalBadge = $isAdmin ? \App\Models\User::pendingApprovalCount() : 0;
 @endphp
 
 <body>
@@ -32,10 +40,10 @@
 
     <header class="site-header on-dark">
         <div class="container header-inner">
+            {{-- THE LOGO (public/images/logo.png). alt="Calajuan" is the link's name for screen readers.
+                 width/height reserve its space so the header doesn't jump while it loads. --}}
             <a class="brand" href="{{ route('home') }}">
-                {{-- aria-hidden: screen readers skip this purely decorative logo --}}
-                <span class="brand-mark" aria-hidden="true"></span>
-                Calajuan
+                <img class="brand-logo" src="{{ asset('images/logo.png') }}" alt="Calajuan" width="360" height="159">
             </a>
 
             {{-- DESKTOP NAV: hidden on phones, where the bottom tab bar takes over.
@@ -46,7 +54,17 @@
 
                 @if ($isAdmin)
                     <a class="nav-link" href="{{ route('admin.dashboard') }}"
-                       @if (request()->routeIs('admin.*')) aria-current="page" @endif>Dashboard</a>
+                       @if (request()->routeIs('admin.*') && ! request()->routeIs('admin.approvals.*')) aria-current="page" @endif>Dashboard</a>
+                    <a class="nav-link" href="{{ route('admin.approvals.index') }}"
+                       @if (request()->routeIs('admin.approvals.*')) aria-current="page" @endif>
+                        Approvals
+                        @if ($approvalBadge > 0)
+                            <span class="nav-badge">{{ $approvalBadge }}<span class="sr-only"> waiting</span></span>
+                        @endif
+                    </a>
+                @elseif ($isOwner)
+                    <a class="nav-link" href="{{ route('owner.places.index') }}"
+                       @if (request()->routeIs('owner.*')) aria-current="page" @endif>My places</a>
                 @elseif ($isUser)
                     <a class="nav-link" href="{{ route('user.profile') }}#saved">Saved</a>
                     <a class="nav-link" href="{{ route('user.profile') }}"
@@ -93,8 +111,7 @@
     <footer class="site-footer on-dark">
         <div class="container footer-inner">
             <a class="brand brand-sm" href="{{ route('home') }}">
-                <span class="brand-mark" aria-hidden="true"></span>
-                Calajuan
+                <img class="brand-logo" src="{{ asset('images/logo.png') }}" alt="Calajuan" width="360" height="159" loading="lazy">
             </a>
             <p>A tourism guide for Calauan, Laguna.</p>
         </div>
@@ -119,6 +136,22 @@
                @if (request()->routeIs('admin.destinations.*')) aria-current="page" @endif>
                 <x-icon name="map-pin" />
                 <span>Places</span>
+            </a>
+            <a class="tab" href="{{ route('admin.approvals.index') }}"
+               @if (request()->routeIs('admin.approvals.*')) aria-current="page" @endif>
+                <span class="tab-icon">
+                    <x-icon name="clock" />
+                    @if ($approvalBadge > 0)
+                        <span class="nav-badge tab-badge">{{ $approvalBadge }}<span class="sr-only"> waiting</span></span>
+                    @endif
+                </span>
+                <span>Approvals</span>
+            </a>
+        @elseif ($isOwner)
+            <a class="tab" href="{{ route('owner.places.index') }}"
+               @if (request()->routeIs('owner.*')) aria-current="page" @endif>
+                <x-icon name="map-pin" />
+                <span>My places</span>
             </a>
         @else
             <a class="tab" href="{{ $isUser ? route('user.profile') . '#saved' : route('login') }}">

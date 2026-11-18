@@ -246,45 +246,55 @@ main:focus {
 .brand {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-3);
     min-height: var(--touch);
-    color: #fff;
+    border-radius: var(--radius-md);
     text-decoration: none;
-    font-family: var(--font-display);
-    font-size: var(--text-xl);
 }
 
-.brand:hover {
-    color: var(--fruit-100);
+/* THE LOGO (an image with a transparent background). Height sets the size; width follows. */
+.brand-logo {
+    display: block;
+    width: auto;
+    height: 48px;
+    transform-origin: 30% 70%;
+    transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1), filter var(--fast) var(--ease);
 }
 
-.brand-sm {
-    font-size: var(--text-lg);
+.brand-sm .brand-logo {
+    height: 36px;
 }
 
-/* The logo: a gold square with grid lines, rotated 45 degrees,
-   which turns the grid into a diamond lattice like a pineapple's skin. */
-.brand-mark {
-    width: 22px;
-    height: 22px;
-    flex-shrink: 0;
-    border-radius: 4px;
-    transform: rotate(45deg);
-    background-color: var(--fruit-500);
-    background-image:
-        linear-gradient(90deg, var(--skin) 2px, transparent 2px),
-        linear-gradient(0deg, var(--skin) 2px, transparent 2px);
-    background-size: 11px 11px;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
+/* HOVER / KEYBOARD FOCUS: the logo lifts, tilts a little with a springy bounce,
+   and gets a soft golden glow. (Turned off for people who prefer less motion, see section 12.) */
+.brand:hover .brand-logo,
+.brand:focus-visible .brand-logo {
+    transform: translateY(-2px) rotate(-3deg) scale(1.06);
+    filter: drop-shadow(0 4px 10px rgba(234, 158, 48, 0.55));
 }
 
-.brand-mark-lg {
-    width: 44px;
-    height: 44px;
-    border-radius: 8px;
-    background-size: 15px 15px;
-    box-shadow: none;
+.brand:active .brand-logo {
+    transform: scale(0.97);
 }
+
+/* The bigger logo on the login and sign-up pages: a gentle float on hover */
+.brand-logo-lg {
+    height: auto;
+    width: min(240px, 70%);
+    margin: 0 auto var(--space-4);
+    transition: transform 400ms var(--ease);
+}
+
+.brand-logo-lg:hover {
+    transform: translateY(-4px) rotate(-2deg);
+}
+
+/* The pineapple "C" on empty pages */
+.empty-logo {
+    width: 64px;
+    height: 64px;
+    margin-bottom: var(--space-3);
+}
+
 
 /* Desktop nav: hidden on phones (the tab bar replaces it) */
 .top-nav {
@@ -1528,6 +1538,20 @@ input[type=checkbox] {
     color: var(--danger-dark);
 }
 
+/* Something to notice, not an error: previews, "waiting for approval" */
+.alert-warning {
+    background: #fdf3d4;
+    border-color: var(--fruit-300);
+    color: var(--skin-text);          /* 6.4:1 */
+}
+
+/* Neutral information */
+.alert-info {
+    background: var(--surface-alt);
+    border-color: var(--line);
+    color: var(--ink);
+}
+
 .empty-state,
 .empty {
     display: flex;
@@ -1540,10 +1564,6 @@ input[type=checkbox] {
     background: var(--surface);
     text-align: center;
     color: var(--muted);
-}
-
-.empty-state .brand-mark {
-    margin-bottom: var(--space-3);
 }
 
 .empty-state h3 {
@@ -1753,6 +1773,24 @@ tbody tr:hover td {
         margin: 0 auto calc(var(--art-w) * -0.42);
         transform: rotate(-10deg);
     }
+}
+
+/* Banner-only home page (owners, admins): the green fills the space down to the
+   footer. The text stays at the top, the pineapple at the bottom edge. */
+.site-main.full:has(> .hero-fill) {
+    display: flex;
+    flex-direction: column;
+}
+
+.hero-fill {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.hero-fill .hero-inner {
+    flex: 1;
+    align-content: space-between;
 }
 
 /* SVG gradient stops read the color tokens, so the drawing follows the palette */
@@ -2114,10 +2152,6 @@ tbody tr:hover td {
     margin-bottom: var(--space-2);
 }
 
-.auth-head .brand-mark {
-    margin: var(--space-2) 0 var(--space-5);
-}
-
 .auth-head h1 {
     margin-bottom: var(--space-1);
     font-size: var(--text-2xl);
@@ -2370,6 +2404,696 @@ tbody tr:hover td {
 }
 
 
+/* ---- Approval status badges (words + icon, not color alone) ---- */
+.badge-live {
+    background: var(--leaf-050);
+    color: var(--leaf-700);
+}
+
+.badge-pending {
+    background: #fdf3d4;
+    color: var(--skin-text);          /* 6.4:1 */
+}
+
+.badge-rejected {
+    background: var(--danger-050);
+    color: var(--danger-dark);
+}
+
+/* Notices above a form or page */
+.form-notice,
+.detail-preview {
+    margin-bottom: var(--space-5);
+}
+
+.form-notice p {
+    margin: 0 0 var(--space-2);
+}
+
+/* ---- Sign-up: Visitor / Business owner choice ---- */
+.account-type {
+    margin-inline: 0;
+    padding: 0;
+    border: 0;
+}
+
+.account-type legend {
+    padding: 0;
+}
+
+.choice-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+}
+
+.choice-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    cursor: pointer;
+    transition: border-color var(--fast) var(--ease), background-color var(--fast) var(--ease);
+}
+
+.choice-card:hover {
+    border-color: var(--leaf-500);
+}
+
+.choice-card:has(input:checked) {
+    border-color: var(--leaf-700);
+    background: var(--leaf-050);
+}
+
+.choice-card:has(input:focus-visible) {
+    outline: 3px solid var(--leaf-300);
+    outline-offset: 2px;
+}
+
+.choice-card input[type=radio] {
+    width: 20px;
+    height: 20px;
+    margin: 2px 0 0;
+    flex-shrink: 0;
+    accent-color: var(--leaf-700);
+}
+
+.choice-text small {
+    display: block;
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+
+/* ---- Business owner: My places ---- */
+.owner-list {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.owner-place {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: var(--space-4);
+    padding: var(--space-4);
+}
+
+.owner-thumb img,
+.owner-thumb .img-placeholder {
+    display: block;
+    width: 96px;
+    height: 72px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+}
+
+.owner-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.owner-name {
+    margin: 0;
+    font-size: var(--text-lg);
+}
+
+.owner-reason {
+    margin: 0;
+    padding: var(--space-2) var(--space-3);
+    border-left: 3px solid var(--danger);
+    background: var(--danger-050);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: var(--text-sm);
+}
+
+.owner-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    grid-column: 1 / -1;
+}
+
+@media (min-width: 720px) {
+    .owner-place {
+        grid-template-columns: 120px minmax(0, 1fr) auto;
+        align-items: center;
+    }
+
+    .owner-thumb img,
+    .owner-thumb .img-placeholder {
+        width: 120px;
+        height: 90px;
+    }
+
+    .owner-actions {
+        grid-column: auto;
+        justify-content: flex-end;
+    }
+}
+
+/* A photo waiting in a change request: dimmed */
+.photo-item.is-pending img {
+    opacity: 0.75;
+}
+
+/* ---- Admin: approvals ---- */
+.approval-section + .approval-section {
+    margin-top: var(--space-7);
+}
+
+.approval-section h2 {
+    margin-bottom: var(--space-3);
+    font-size: var(--text-xl);
+}
+
+.review-grid {
+    display: grid;
+    gap: var(--space-6);
+}
+
+@media (min-width: 900px) {
+    .review-grid {
+        grid-template-columns: minmax(0, 1fr) 320px;
+        align-items: start;
+    }
+
+    .decision {
+        position: sticky;
+        top: calc(env(safe-area-inset-top, 0px) + 88px);
+    }
+}
+
+.review-list {
+    margin: 0;
+}
+
+.review-list > div {
+    display: grid;
+    gap: var(--space-1);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--line);
+}
+
+@media (min-width: 560px) {
+    .review-list > div {
+        grid-template-columns: 9rem minmax(0, 1fr);
+        gap: var(--space-4);
+    }
+}
+
+.review-list dt {
+    font-weight: 700;
+}
+
+.review-list dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.review-subhead {
+    margin: var(--space-6) 0 var(--space-3);
+    font-size: var(--text-xl);
+}
+
+.decision {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-5);
+}
+
+.decision h2 {
+    margin: 0;
+    font-size: var(--text-xl);
+}
+
+.decision-reject {
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line);
+}
+
+/* What changed: old value struck through in red, new value in green */
+.diff-table th[scope=row] {
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+.diff-table td {
+    vertical-align: top;
+    overflow-wrap: anywhere;
+}
+
+.diff-old {
+    background: var(--danger-050);
+    color: var(--danger-dark);
+    text-decoration: line-through;
+    text-decoration-color: rgba(143, 29, 23, 0.4);
+}
+
+.diff-new {
+    background: var(--leaf-050);
+    color: var(--leaf-900);
+    font-weight: 600;
+}
+
+
+/* ---- Sign-up: business details, only while "Business owner" is ticked ---- */
+.owner-fields {
+    display: none;
+    margin: var(--space-4) 0 0;
+    padding: var(--space-4);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface-alt);
+}
+
+form:has(input[name=account_type][value=owner]:checked) .owner-fields {
+    display: block;
+}
+
+.owner-fields legend {
+    padding: 0 var(--space-2);
+}
+
+/* ---- Admin: owner verification ---- */
+.document-preview {
+    display: block;
+    max-width: 640px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.document-preview img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.checklist {
+    margin: 0;
+    padding-left: var(--space-5);
+}
+
+.checklist li + li {
+    margin-top: var(--space-2);
+}
+
+
+/* Dashboard numbers are links to the filtered destinations list */
+.stat-link {
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease), transform var(--fast) var(--ease);
+}
+
+.stat-link:hover {
+    border-color: var(--leaf-500);
+    box-shadow: var(--shadow-2);
+    transform: translateY(-1px);
+}
+
+.stat-arrow {
+    color: var(--leaf-700);
+    transition: transform var(--fast) var(--ease);
+}
+
+.stat-link:hover .stat-arrow {
+    transform: translateX(2px);
+}
+
+/* Filter chips above the admin destinations table (they wrap instead of scrolling) */
+.filter-chips {
+    flex-wrap: wrap;
+    margin: 0 0 var(--space-4);
+    padding: 0;
+    overflow: visible;
+}
+
+
+/* ---- Approvals page: cards, tabs, recent decisions ---- */
+.approvals-layout {
+    display: grid;
+    gap: var(--space-6);
+}
+
+@media (min-width: 1000px) {
+    .approvals-layout {
+        grid-template-columns: minmax(0, 1fr) 300px;
+        align-items: start;
+    }
+
+    .recent-card {
+        position: sticky;
+        top: calc(env(safe-area-inset-top, 0px) + 88px);
+    }
+}
+
+.approval-heading {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-xl);
+}
+
+.approval-list {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* One submission. The whole card is clickable (the title link is stretched over it). */
+.approval-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: var(--space-4);
+    align-items: center;
+    padding: var(--space-4);
+    transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease), transform var(--fast) var(--ease);
+}
+
+.approval-card:hover {
+    border-color: var(--leaf-500);
+    box-shadow: var(--shadow-2);
+    transform: translateY(-1px);
+}
+
+.approval-card:focus-within {
+    outline: 3px solid var(--leaf-300);
+    outline-offset: 2px;
+}
+
+.approval-thumb img,
+.approval-thumb-icon {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+}
+
+.approval-thumb-owner { background: var(--fruit-100); color: var(--skin-text); }
+.approval-thumb-place { background: var(--leaf-050); color: var(--leaf-700); }
+.approval-thumb-change { background: var(--surface-alt); color: var(--ink); }
+
+.approval-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.approval-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.kind-badge.kind-owner { background: var(--fruit-100); color: var(--skin-text); }
+.kind-badge.kind-place { background: var(--leaf-050); color: var(--leaf-700); }
+.kind-badge.kind-change { background: var(--surface-alt); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+
+.badge-waiting {
+    background: #fde4d0;
+    color: #9a3412;                   /* 6.6:1 */
+}
+
+.approval-title {
+    margin: 0;
+    font-size: var(--text-lg);
+}
+
+.approval-link {
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.approval-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+}
+
+.approval-link:focus-visible {
+    outline: none;   /* the card shows the focus ring instead (:focus-within) */
+}
+
+.approval-summary {
+    margin: 0;
+    color: var(--ink);
+    font-size: var(--text-sm);
+    overflow-wrap: anywhere;
+}
+
+.approval-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1);
+    margin: 0;
+    color: var(--muted);
+    font-size: var(--text-sm);
+}
+
+.approval-cta {
+    display: none;
+    pointer-events: none;   /* decoration: the whole card is the link */
+}
+
+@media (min-width: 640px) {
+    .approval-card {
+        grid-template-columns: 72px minmax(0, 1fr) auto;
+    }
+
+    .approval-thumb img,
+    .approval-thumb-icon {
+        width: 72px;
+        height: 72px;
+    }
+
+    .approval-cta {
+        display: inline-flex;
+    }
+}
+
+/* Tab counts: highlighted when something is waiting */
+.chip-count-hot {
+    display: inline-grid;
+    place-items: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: var(--radius-pill);
+    background: var(--fruit-700);
+    color: var(--ink);                /* dark text on orange: 6.9:1 */
+    font-size: var(--text-xs);
+    font-weight: 700;
+}
+
+.chip[aria-current="page"] .chip-count-hot {
+    background: var(--ink);
+    color: #fff;
+}
+
+/* Nothing waiting */
+.all-clear {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-7) var(--space-5);
+    text-align: center;
+}
+
+.all-clear h2 {
+    margin: 0;
+    font-size: var(--text-xl);
+}
+
+.all-clear p {
+    margin: 0;
+}
+
+.all-clear-icon {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--leaf-050);
+    color: var(--leaf-700);
+}
+
+/* Recent decisions */
+.recent-card {
+    padding: var(--space-5);
+}
+
+.recent-card h2 {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-lg);
+}
+
+.recent-list {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.recent-list li {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: var(--space-2);
+    align-items: start;
+}
+
+.recent-list a {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.recent-dot {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.recent-dot.is-approved { background: var(--leaf-050); color: var(--leaf-700); }
+.recent-dot.is-rejected { background: var(--danger-050); color: var(--danger-dark); }
+
+.recent-meta {
+    margin: 2px 0 0;
+    color: var(--muted);
+    font-size: var(--text-xs);
+}
+
+/* Count badge on the admin's Approvals link (header and phone tab bar) */
+.nav-badge {
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    margin-left: var(--space-2);
+    padding: 0 6px;
+    border-radius: var(--radius-pill);
+    background: var(--fruit-500);
+    color: var(--ink);                /* 7.4:1 */
+    font-size: var(--text-xs);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.tab-icon {
+    position: relative;
+    display: inline-flex;
+}
+
+.tab-badge {
+    position: absolute;
+    top: -6px;
+    right: -12px;
+    margin: 0;
+}
+
+
+/* ---- Experience (interest) colors: pale background, dark text (all 6:1 or better) ---- */
+.interest-green  { background: #e3f0d6; color: #2f5a1f; }
+.interest-orange { background: #fde4cc; color: #8a3c06; }
+.interest-red    { background: #fbdcd8; color: #8f1d17; }
+.interest-blue   { background: #dcebf7; color: #1d4e7a; }
+.interest-teal   { background: #d5efec; color: #155e57; }
+.interest-brown  { background: #f0e2cf; color: #6b3d12; }
+.interest-purple { background: #ebe1f5; color: #5b2d82; }
+.interest-pink   { background: #fadbe7; color: #8a1f4c; }
+.interest-gold   { background: #f8ecc0; color: #6e5200; }
+.interest-gray   { background: #ebe8e0; color: #3f4538; }
+
+/* "+2" after the first three pills on a card */
+.interest-more {
+    background: transparent;
+    color: var(--muted);
+    box-shadow: inset 0 0 0 1px var(--line);
+}
+
+/* Smaller pills on the place cards */
+.interest-list-sm {
+    gap: var(--space-1);
+}
+
+.interest-list-sm .interest-pill {
+    padding: 1px var(--space-2);
+    font-size: var(--text-xs);
+}
+
+/* Admin: choosing an interest's color */
+.color-choices {
+    margin-inline: 0;
+    padding: 0;
+    border: 0;
+}
+
+.color-choices legend {
+    padding: 0;
+}
+
+.color-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+}
+
+.color-option {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--touch);
+    padding: 0 var(--space-3) 0 var(--space-2);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+}
+
+.color-option:has(input:checked) {
+    border-color: var(--leaf-700);
+    background: var(--leaf-050);
+}
+
+.color-option input[type=radio] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--leaf-700);
+}
+
+/* Saved: a filled red heart on a pale pink button */
+.save-btn.is-saved {
+    background: #fadbe7;
+    color: #8a1f4c;
+}
+
+.save-btn.is-saved:hover {
+    background: #f6c7d9;
+    color: #8a1f4c;
+}
+
+
 /* =====================================================================
    12. MOTION: respect people who turn off animations in their settings
    ===================================================================== */
@@ -2384,6 +3108,13 @@ tbody tr:hover td {
     *::after {
         transition-duration: 0.01ms !important;
         animation-duration: 0.01ms !important;
+    }
+
+    /* the logo keeps its glow on hover, but doesn't move */
+    .brand:hover .brand-logo,
+    .brand:focus-visible .brand-logo,
+    .brand-logo-lg:hover {
+        transform: none;
     }
 
     a.card:hover,

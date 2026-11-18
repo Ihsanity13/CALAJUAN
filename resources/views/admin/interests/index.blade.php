@@ -34,7 +34,7 @@
             <tbody>
                 @forelse ($interests as $interest)
                     <tr>
-                        <td class="cell-strong">{{ $interest->name }}</td>
+                        <td><x-interest-pill :interest="$interest" /></td>
                         {{-- destinations_count comes from withCount() in the controller --}}
                         <td class="cell-num">{{ $interest->destinations_count }}</td>
                         <td class="cell-actions">

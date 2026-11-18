@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Destination;
 use App\Models\DestinationHour;
+use App\Models\DestinationImage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -107,7 +108,8 @@ class DestinationRequest extends FormRequest
             function (Validator $validator) {
                 // When editing, the URL contains the destination; when creating, it doesn't
                 $destination = $this->route('destination');
-                $existing = $destination ? $destination->images()->count() : 0;
+                // Counts the live photos AND the ones waiting in a change request
+                $existing = $destination ? DestinationImage::where('destination_id', $destination->id)->count() : 0;
                 $new = count($this->file('photos', []));
 
                 if ($existing + $new > self::MAX_PHOTOS) {

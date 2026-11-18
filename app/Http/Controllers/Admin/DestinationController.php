@@ -7,21 +7,37 @@ use App\Http\Requests\DestinationRequest;
 use App\Models\Category;
 use App\Models\Destination;
 use App\Models\Interest;
+use App\Services\DestinationPhotoService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Throwable;
 
+// Admins add and edit places directly: their changes go live right away.
+// (Business owners' submissions go through the approval queue instead,
+// see Admin\ApprovalController.)
 class DestinationController extends Controller
 {
-    // READ (list): show all destinations
-    public function index()
-    {
-        // with('category') loads each destination's category in one extra query,
-        // instead of one query per row. This avoids the "N+1 query problem".
-        $destinations = Destination::with('category')->orderBy('name')->get();
+    // The photo logic is shared with the owner pages (app/Services).
+    // Laravel creates the service and passes it in ("dependency injection").
+    public function __construct(private DestinationPhotoService $photos) {}
 
-        return view('admin.destinations.index', compact('destinations'));
+    // READ (list): show all destinations
+    // ?show=featured (or live / hot / new / pending / rejected) narrows the list;
+    // the dashboard's numbers link here. An unknown value just shows everything.
+    public function index(Request $request)
+    {
+        $filter = array_key_exists($request->query('show'), Destination::LIST_FILTERS) ? $request->query('show') : null;
+
+        // with(...) loads each destination's category and owner in one extra query each,
+        // instead of one query per row. This avoids the "N+1 query problem".
+        // withExists adds pending_change_exists = true/false for the "Changes waiting" badge.
+        $destinations = Destination::with(['category', 'owner:id,name'])
+            ->withExists('pendingChange')
+            ->listFilter($filter)
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.destinations.index', compact('destinations', 'filter'));
     }
 
     // CREATE (step 1): show the empty form.
@@ -37,6 +53,7 @@ class DestinationController extends Controller
         // destinationData() = the validated columns of the destinations table
         // (photos, interests and hours aren't columns; they're saved separately).
         // create() fills them through $fillable (mass assignment).
+        // A place an admin adds is approved straight away (the column's default).
         // The transaction keeps the place, its interests and its hours together:
         // if one part fails, none of them is saved.
         $destination = DB::transaction(function () use ($request) {
@@ -46,7 +63,7 @@ class DestinationController extends Controller
             return $destination;
         });
 
-        $count = $this->storePhotos($destination, $request->file('photos', []));
+        $count = $this->photos->store($destination, $request->file('photos', []));
 
         return redirect()->route('admin.destinations.index')
             ->with('success', 'Destination created' . $this->photoNote($count) . '.');
@@ -55,7 +72,7 @@ class DestinationController extends Controller
     // UPDATE (step 1): show the form with the current values
     public function edit(Destination $destination)
     {
-        $destination->load(['interests', 'hours']);
+        $destination->load(['interests', 'hours', 'owner:id,name', 'pendingChange']);
 
         return view('admin.destinations.edit', ['destination' => $destination] + $this->formOptions());
     }
@@ -68,7 +85,7 @@ class DestinationController extends Controller
             $this->saveDetails($destination, $request);
         });
 
-        $count = $this->storePhotos($destination, $request->file('photos', []));
+        $count = $this->photos->store($destination, $request->file('photos', []));
 
         return redirect()->route('admin.destinations.index')
             ->with('success', 'Destination updated' . $this->photoNote($count) . '.');
@@ -77,9 +94,9 @@ class DestinationController extends Controller
     // DELETE
     public function destroy(Destination $destination)
     {
-        // The destination's images, favorites, and reviews are deleted too,
-        // because those tables use cascadeOnDelete(). Its photo files are
-        // deleted by the Destination model (see booted() in Destination.php).
+        // The destination's images, favorites, reviews and change requests are
+        // deleted too, because those tables use cascadeOnDelete(). Its photo files
+        // are deleted by the Destination model (see booted() in Destination.php).
         $destination->delete();
 
         return redirect()->route('admin.destinations.index')
@@ -101,46 +118,6 @@ class DestinationController extends Controller
         // sync(): keep exactly these interests (adds the ticked ones, removes the unticked ones)
         $destination->interests()->sync($request->interestIds());
         $destination->syncHours($request->openingHours());
-    }
-
-    // Save uploaded photos to storage/app/public/destinations/{id}/ and add
-    // a destination_images row for each. Returns how many were saved.
-    // If the destination has no primary photo yet, the first new one becomes primary,
-    // so there is always exactly one primary once a place has photos.
-    private function storePhotos(Destination $destination, array $files): int
-    {
-        if (empty($files)) {
-            return 0;
-        }
-
-        $storedPaths = [];
-
-        try {
-            // A transaction: either ALL the photo rows are saved, or none are
-            DB::transaction(function () use ($destination, $files, &$storedPaths) {
-                $needsPrimary = ! $destination->images()->where('is_primary', true)->exists();
-
-                foreach ($files as $file) {
-                    // store() picks a random, unique file name, so two uploads
-                    // called "photo.jpg" never overwrite each other
-                    $path = $file->store('destinations/' . $destination->id, 'public');
-                    $storedPaths[] = $path;
-
-                    $destination->images()->create([
-                        'image_path' => $path,
-                        'is_primary' => $needsPrimary,
-                    ]);
-
-                    $needsPrimary = false;   // only the first one
-                }
-            });
-        } catch (Throwable $e) {
-            // The rows were rolled back, so remove the files we already wrote
-            Storage::disk('public')->delete($storedPaths);
-            throw $e;
-        }
-
-        return count($files);
     }
 
     // " with 3 photos" for the success message, or nothing

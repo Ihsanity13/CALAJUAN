@@ -2,8 +2,20 @@
      old('x', $destination->x ?? default) means: if validation just failed, show what
      the user typed; otherwise show the saved value (edit) or the default (create,
      where $destination doesn't exist).
-     <x-input> draws the label, the box, and the error message under it. --}}
+     <x-input> draws the label, the box, and the error message under it.
+
+     Used by the admin pages AND the business owner pages. The including page can pass:
+       $mode         'admin' (default) or 'owner'. Owners don't get the labels (featured/hot/new).
+       $cancelUrl    where Cancel goes (default: the admin destinations list)
+       $submitLabel  the button text (default: "Save destination")
+       $photoNote    an extra line under the photo picker
+       $pendingPhotos photos waiting for approval, shown read-only --}}
 @csrf
+
+@php
+    $mode ??= 'admin';
+    $isAdminForm = $mode === 'admin';
+@endphp
 
 {{-- The category dropdown is written out by hand (x-input only does text boxes),
      but it follows the same pattern: label, control, error underneath. --}}
@@ -53,7 +65,10 @@
     <p class="field-hint">Tick everything this place is good for. Used for recommendations.</p>
 
     @if ($interests->isEmpty())
-        <p class="muted">No interests yet. <a href="{{ route('admin.interests.create') }}">Add some first</a>.</p>
+        <p class="muted">
+            No interests yet.
+            @if ($isAdminForm) <a href="{{ route('admin.interests.create') }}">Add some first</a>. @endif
+        </p>
     @else
         <div class="check-chips">
             @foreach ($interests as $interest)
@@ -300,6 +315,22 @@
         </ul>
     @endif
 
+    {{-- Photos waiting for approval (owner pages): shown, but nothing to click --}}
+    @if (isset($pendingPhotos) && $pendingPhotos->isNotEmpty())
+        <span class="field-label">New photos waiting for approval</span>
+        <ul class="photo-grid" role="list">
+            @foreach ($pendingPhotos as $photo)
+                <li class="photo-item is-pending">
+                    <div class="photo-thumb">
+                        <img src="{{ $photo->url }}" alt="New photo {{ $loop->iteration }}, waiting for approval"
+                             loading="lazy" width="320" height="240">
+                        <span class="badge badge-pending photo-badge">Waiting</span>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    @endif
+
     <label for="photos">
         {{ $photoCount > 0 ? 'Add more photos' : 'Photos' }} <span class="optional">(optional)</span>
     </label>
@@ -310,10 +341,13 @@
     <p class="field-hint" id="photos-hint">
         JPG, PNG or WebP, up to 4 MB each. Up to 10 photos per place
         @if ($photoCount > 0)
-            ({{ $photoCount }} saved, {{ max(0, 10 - $photoCount) }} left)@endif.
+            ({{ $photoCount }} saved, {{ max(0, 10 - $photoCount - (isset($pendingPhotos) ? $pendingPhotos->count() : 0)) }} left)@endif.
         @if ($photoCount === 0)
             The first photo becomes the primary photo shown on cards.
         @endif
+        @isset($photoNote)
+            <br>{{ $photoNote }}
+        @endisset
     </p>
     @if ($photoErrors->isNotEmpty())
         <div id="photos-error">
@@ -330,6 +364,7 @@
 {{-- LABELS. @checked(...) adds the "checked" attribute when the condition is true.
      An unticked checkbox sends nothing; DestinationRequest handles that,
      and $hasOld (above) keeps an unticked box unticked after a failed save. --}}
+@if ($isAdminForm)
 @php
     $label = fn (string $field) => $hasOld ? (bool) old($field) : (bool) ($destination->$field ?? false);
 @endphp
@@ -360,11 +395,12 @@
         </span>
     </label>
 </fieldset>
+@endif
 
 <div class="form-actions">
     <button type="submit" class="btn">
         <x-icon name="check" size="18" />
-        Save destination
+        {{ $submitLabel ?? 'Save destination' }}
     </button>
-    <a class="btn btn-ghost" href="{{ route('admin.destinations.index') }}">Cancel</a>
+    <a class="btn btn-ghost" href="{{ $cancelUrl ?? route('admin.destinations.index') }}">Cancel</a>
 </div>

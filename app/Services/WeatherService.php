@@ -12,20 +12,28 @@ use Throwable;
 //
 // Rules from our plan:
 // - Never show an error and never slow the page down much:
-//   at most 5 seconds of waiting, and failures return null (the card just hides).
+//   at most 8 seconds of waiting, and failures return null (the card just hides).
 // - Cache good results for 30 minutes, so most page loads don't call the API at all.
 // - Cache failures for 5 minutes, so a broken API delays at most one page
 //   view every 5 minutes instead of every single page view.
+// - When the API doesn't answer, show the LAST GOOD reading if it's under
+//   6 hours old (the card says "Updated 4:30 AM", so visitors see its age).
+//   The connection to Open-Meteo's server can be slow or patchy from here.
 class WeatherService
 {
     // Calauan, Laguna
     private const LATITUDE = 14.1467;
+
     private const LONGITUDE = 121.3167;
 
     private const URL = 'https://api.open-meteo.com/v1/forecast';
+
     // ":v2" because the cached data's shape changed (tips now have icons, plus "updated").
     // A new key means old cached weather in the old shape is simply ignored.
     private const CACHE_KEY = 'weather:calauan:v2';
+
+    // The last reading that worked, kept for 6 hours as a fallback
+    private const LAST_GOOD_KEY = 'weather:calauan:v2:last-good';
 
     // Returns the weather as an array, or null if it isn't available right now:
     // ['temperature' => 26, 'condition' => 'Mostly clear', 'icon' => 'moon',
@@ -36,13 +44,14 @@ class WeatherService
         // 1. Cached answer (good or failed) from the last 30 / 5 minutes?
         $cached = Cache::get(self::CACHE_KEY);
         if ($cached !== null) {
-            return $cached['ok'] ? $cached['weather'] : null;
+            // After a recent failure: the last good reading, or nothing
+            return $cached['ok'] ? $cached['weather'] : Cache::get(self::LAST_GOOD_KEY);
         }
 
         // 2. Ask Open-Meteo
         try {
-            $response = Http::connectTimeout(3)   // seconds to connect
-                ->timeout(5)                        // seconds in total, then give up
+            $response = Http::connectTimeout(5)   // seconds to connect
+                ->timeout(8)                        // seconds in total, then give up
                 ->acceptJson()
                 ->get(self::URL, [
                     'latitude' => self::LATITUDE,
@@ -57,15 +66,17 @@ class WeatherService
             $weather = $this->parse($response->json());
 
             Cache::put(self::CACHE_KEY, ['ok' => true, 'weather' => $weather], now()->addMinutes(30));
+            Cache::put(self::LAST_GOOD_KEY, $weather, now()->addHours(6));
 
             return $weather;
         } catch (Throwable $e) {
-            // Timeout, no internet, bad answer...: note it in the log for us, hide the card for visitors
+            // Timeout, no internet, bad answer...: note it in the log for us
             Log::warning('Weather unavailable: ' . $e->getMessage());
 
             Cache::put(self::CACHE_KEY, ['ok' => false], now()->addMinutes(5));
 
-            return null;
+            // Show the last good reading if there is one; otherwise the card hides
+            return Cache::get(self::LAST_GOOD_KEY);
         }
     }
 

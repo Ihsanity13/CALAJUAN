@@ -11,13 +11,26 @@
     <div class="page-head">
         <div>
             <h1>Destinations</h1>
-            <p class="muted">{{ $destinations->count() }} {{ \Illuminate\Support\Str::plural('place', $destinations->count()) }}</p>
+            <p class="muted">
+                {{ $destinations->count() }} {{ \Illuminate\Support\Str::plural('place', $destinations->count()) }}
+                @if ($filter) · showing {{ \App\Models\Destination::LIST_FILTERS[$filter] }} @endif
+            </p>
         </div>
         <a class="btn" href="{{ route('admin.destinations.create') }}">
             <x-icon name="plus" size="18" />
             New destination
         </a>
     </div>
+
+    {{-- FILTERS: one chip per filter, the current one marked with aria-current --}}
+    <nav class="chip-row filter-chips" aria-label="Filter destinations">
+        <a class="chip" href="{{ route('admin.destinations.index') }}"
+           @if (! $filter) aria-current="page" @endif>All</a>
+        @foreach (\App\Models\Destination::LIST_FILTERS as $key => $label)
+            <a class="chip" href="{{ route('admin.destinations.index', ['show' => $key]) }}"
+               @if ($filter === $key) aria-current="page" @endif>{{ $label }}</a>
+        @endforeach
+    </nav>
 
     {{-- .table-wrap scrolls sideways on small screens; the header row stays on top --}}
     <div class="table-wrap">
@@ -26,6 +39,7 @@
                 <tr>
                     <th scope="col">Name</th>
                     <th scope="col">Category</th>
+                    <th scope="col">Status</th>
                     <th scope="col">Labels</th>
                     <th scope="col" class="cell-actions"><span class="sr-only">Actions</span></th>
                 </tr>
@@ -38,10 +52,22 @@
                             @if ($destination->address)
                                 <span class="cell-sub">{{ $destination->address }}</span>
                             @endif
+                            @if ($destination->owner)
+                                <span class="cell-sub">Owner: {{ $destination->owner->name }}</span>
+                            @endif
                         </td>
                         {{-- $destination->category uses the belongsTo relationship from the model.
                              It was preloaded with with('category') in the controller. --}}
                         <td><span class="tag">{{ $destination->category->name }}</span></td>
+                        {{-- Live / waiting / not approved, plus a note when an owner's changes are waiting --}}
+                        <td>
+                            <div class="label-list">
+                                <x-status-badge :status="$destination->status" />
+                                @if ($destination->pending_change_exists)
+                                    <span class="badge badge-pending"><x-icon name="clock" size="14" /> Changes waiting</span>
+                                @endif
+                            </div>
+                        </td>
                         {{-- ⭐ Featured / 🔥 Hot / ✨ New, or a dash when it has none --}}
                         <td>
                             @if ($destination->is_featured || $destination->is_hot || $destination->is_new)
@@ -73,8 +99,12 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="table-empty">
-                            No destinations yet. <a href="{{ route('admin.destinations.create') }}">Add the first one</a>.
+                        <td colspan="5" class="table-empty">
+                            @if ($filter)
+                                No places here. <a href="{{ route('admin.destinations.index') }}">Show all places</a>.
+                            @else
+                                No destinations yet. <a href="{{ route('admin.destinations.create') }}">Add the first one</a>.
+                            @endif
                         </td>
                     </tr>
                 @endforelse

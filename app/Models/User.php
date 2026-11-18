@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -40,6 +41,51 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    // The page each role starts on after logging in:
+    // admins -> dashboard, business owners -> My places, visitors -> home
+    public function homeUrl(): string
+    {
+        return match (true) {
+            $this->isAdmin() => route('admin.dashboard'),
+            $this->isOwner() => route('owner.places.index'),
+            default => route('home'),
+        };
+    }
+
+    // How many submissions wait for an admin: owners to verify + new places + changes.
+    // Shown on the dashboard and as a badge on the Approvals menu link.
+    public static function pendingApprovalCount(): int
+    {
+        return OwnerVerification::where('status', OwnerVerification::STATUS_PENDING)->count()
+            + Destination::where('status', Destination::STATUS_PENDING)->count()
+            + DestinationChange::where('status', DestinationChange::STATUS_PENDING)->count();
+    }
+
+    // HELPER: true if this user is a business owner (manages their own places)
+    public function isOwner(): bool
+    {
+        return $this->role === 'owner';
+    }
+
+    // HELPER: an owner whose business an admin has checked and approved.
+    // Only verified owners may add or edit places.
+    public function isVerifiedOwner(): bool
+    {
+        return $this->isOwner() && $this->ownerVerification?->isApproved() === true;
+    }
+
+    // RELATIONSHIP: the business details this owner sent for checking (or null)
+    public function ownerVerification(): HasOne
+    {
+        return $this->hasOne(OwnerVerification::class);
+    }
+
+    // RELATIONSHIP: the places this business owner manages
+    public function ownedDestinations(): HasMany
+    {
+        return $this->hasMany(Destination::class, 'owner_id');
     }
 
     // RELATIONSHIP: destinations this user saved (many-to-many via favorites).

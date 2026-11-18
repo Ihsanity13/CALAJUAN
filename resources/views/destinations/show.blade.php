@@ -24,18 +24,43 @@
         <x-icon name="arrow-left" size="18" /> Explore
     </a>
 
+    {{-- PREVIEW: only the owner and admins can open a place that isn't approved --}}
+    @unless ($destination->isApproved())
+        <x-alert type="warning" class="detail-preview">
+            <strong>Preview.</strong>
+            @if ($destination->status === \App\Models\Destination::STATUS_REJECTED)
+                This place was not approved, so visitors can't see it.
+            @else
+                This place is waiting for approval. Visitors can't see it yet.
+            @endif
+        </x-alert>
+    @endunless
+
     {{-- PHOTOS (primary first) with the Save button over the corner --}}
     <div class="detail-media">
         <x-photo-gallery :images="$destination->images" :name="$destination->name" />
 
-        {{-- SAVE: guests are sent to log in. Saving itself comes with
-             the Saved feature (Day 5b), which replaces this with a real toggle. --}}
+        {{-- SAVE: guests are sent to log in; visitors get the real toggle below.
+             Owners and admins don't save places, so they see no button. --}}
         @guest
             <a class="save-btn" href="{{ route('login') }}">
                 <x-icon name="heart" size="20" />
                 <span>Save</span>
+                <span class="sr-only">(log in to save places)</span>
             </a>
         @endguest
+
+        {{-- VISITORS: one button saves / un-saves. aria-pressed tells screen readers
+             whether it's on. Only live places can be saved. --}}
+        @if ($isSaved !== null && $destination->isApproved())
+            <form method="POST" action="{{ route('destinations.save', $destination) }}">
+                @csrf
+                <button type="submit" @class(['save-btn', 'is-saved' => $isSaved]) aria-pressed="{{ $isSaved ? 'true' : 'false' }}">
+                    <x-icon name="heart" size="20" :fill="$isSaved ? 'currentColor' : 'none'" />
+                    <span>{{ $isSaved ? 'Saved' : 'Save' }}</span>
+                </button>
+            </form>
+        @endif
     </div>
 
     {{-- HEADER: category, labels, name, rating, open now, address --}}
@@ -90,12 +115,12 @@
                     <p class="muted">No description yet.</p>
                 @endif
 
-                {{-- What the place is good for --}}
+                {{-- EXPERIENCES: the place's interests (Nature, Adventure...), as visitors see them --}}
                 @if ($destination->interests->isNotEmpty())
-                    <h3 class="detail-subhead">Good for</h3>
+                    <h3 class="detail-subhead">Experiences</h3>
                     <ul class="interest-list" role="list">
                         @foreach ($destination->interests as $interest)
-                            <li class="interest-pill">{{ $interest->name }}</li>
+                            <x-interest-pill :interest="$interest" tag="li" />
                         @endforeach
                     </ul>
                 @endif

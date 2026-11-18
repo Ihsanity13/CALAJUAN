@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureOwnerIsVerified;
 use App\Http\Middleware\EnsureUserHasRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -18,7 +19,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // instead of the full class name.
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
+            // 'owner.verified': business owners whose business an admin has checked
+            'owner.verified' => EnsureOwnerIsVerified::class,
         ]);
+
+        // Logged-in people who open /login or /register (the 'guest' pages)
+        // are sent to their own start page: admins to the dashboard, and so on.
+        $middleware->redirectUsersTo(fn (Request $request) => $request->user()->homeUrl());
 
         // TRUSTED PROXIES: the cloudflared tunnel runs on this same machine and
         // forwards visitors to 127.0.0.1:8000, adding "X-Forwarded-Proto: https".

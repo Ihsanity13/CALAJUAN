@@ -13,7 +13,8 @@ class DestinationImage extends Model
     // (class name -> snake_case -> plural). No extra setup needed.
 
     // MASS ASSIGNMENT: columns that may be filled in bulk
-    protected $fillable = ['destination_id', 'image_path', 'is_primary'];
+    // destination_change_id: set while the photo waits in a change request (hidden from the public)
+    protected $fillable = ['destination_id', 'image_path', 'is_primary', 'destination_change_id'];
 
     // CASTS: read is_primary as a real true/false instead of 1/0 or "t"/"f"
     protected function casts(): array
