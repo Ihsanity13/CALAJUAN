@@ -693,6 +693,101 @@ a.card:hover,
         var(--grad-fruit);
 }
 
+/* ---- Photo gallery: swipe with scroll-snap ---- */
+.gallery {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--surface-alt);
+}
+
+.gallery-empty {
+    aspect-ratio: 4 / 3;
+}
+
+.gallery-track {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;   /* each photo snaps into place */
+    scrollbar-width: none;           /* hide the scrollbar (Firefox) */
+}
+
+.gallery-track::-webkit-scrollbar {
+    display: none;                   /* hide the scrollbar (Chrome, Safari) */
+}
+
+.gallery-track:focus-visible {
+    outline: 3px solid var(--leaf-700);
+    outline-offset: -3px;
+}
+
+.gallery-slide {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    aspect-ratio: 4 / 3;
+}
+
+.gallery-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* "2 / 5" in the bottom-right corner, dark pill so it reads on any photo */
+.gallery-counter {
+    position: absolute;
+    right: var(--space-3);
+    bottom: var(--space-3);
+    margin: 0;
+    padding: 2px var(--space-3);
+    border-radius: var(--radius-pill);
+    background: rgba(31, 42, 28, 0.78);
+    color: #fff;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+}
+
+.gallery-btn {
+    position: absolute;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: var(--touch);
+    height: var(--touch);
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-2);
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition: opacity var(--fast) var(--ease), background-color var(--fast) var(--ease);
+}
+
+.gallery-btn:hover {
+    background: var(--leaf-050);
+}
+
+.gallery-btn:disabled {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.gallery-prev { left: var(--space-3); }
+.gallery-next { right: var(--space-3); }
+
+@media (min-width: 768px) {
+    .gallery-slide {
+        aspect-ratio: 16 / 9;
+    }
+}
+
 /* ---- Destination card ---- */
 .dest-grid {
     display: grid;
@@ -929,6 +1024,38 @@ textarea {
     line-height: 1.5;
 }
 
+/* File picker: a dashed drop area with a green "Choose files" button */
+input[type=file] {
+    width: 100%;
+    min-height: var(--touch);
+    padding: var(--space-2);
+    border: 1.5px dashed var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    font: inherit;
+    font-size: var(--text-sm);
+    color: var(--muted);
+    cursor: pointer;
+}
+
+input[type=file]::file-selector-button {
+    min-height: 36px;
+    margin-right: var(--space-3);
+    padding: 0 var(--space-4);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--leaf-700);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--fast) var(--ease);
+}
+
+input[type=file]:hover::file-selector-button {
+    background: var(--leaf-900);
+}
+
 input:hover,
 select:hover,
 textarea:hover {
@@ -1097,6 +1224,60 @@ input[type=checkbox] {
     font-size: var(--text-sm);
     font-variant-numeric: tabular-nums;
     color: var(--muted);
+}
+
+/* ---- Saved photos on the destination edit page ---- */
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr));
+    gap: var(--space-3);
+    margin: var(--space-2) 0 var(--space-5);
+    padding: 0;
+    list-style: none;
+}
+
+.photo-item {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+}
+
+/* the primary photo gets a green frame */
+.photo-item.is-primary {
+    border-color: var(--leaf-500);
+    box-shadow: 0 0 0 1px var(--leaf-500);
+}
+
+.photo-thumb {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: var(--surface-alt);
+}
+
+.photo-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-badge {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+    box-shadow: var(--shadow-1);
+}
+
+.photo-actions {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-1);
+}
+
+.photo-actions .btn {
+    justify-content: flex-start;
 }
 
 /* "Looking up the address…" / "Use this address" under the Address field */
@@ -1510,7 +1691,8 @@ tbody tr:hover td {
    12. MOTION: respect people who turn off animations in their settings
    ===================================================================== */
 @media (prefers-reduced-motion: reduce) {
-    html {
+    html,
+    .gallery-track {
         scroll-behavior: auto;
     }
 

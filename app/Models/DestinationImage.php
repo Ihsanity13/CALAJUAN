@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class DestinationImage extends Model
 {
@@ -26,5 +28,25 @@ class DestinationImage extends Model
     public function destination(): BelongsTo
     {
         return $this->belongsTo(Destination::class);
+    }
+
+    // $image->url gives the web address of the photo, for <img src="...">.
+    // asset() builds it from the address the visitor is using, so it works on
+    // 127.0.0.1 AND through the https cloudflared tunnel.
+    // (Storage::url() would use APP_URL from .env, which is only right on one of them.)
+    // Files live in storage/app/public; "php artisan storage:link" makes them
+    // reachable at /storage/...
+    protected function url(): Attribute
+    {
+        return Attribute::get(fn () => asset('storage/' . $this->image_path));
+    }
+
+    // When a photo row is deleted, delete its file from storage too,
+    // so no orphaned files pile up.
+    protected static function booted(): void
+    {
+        static::deleted(function (DestinationImage $image) {
+            Storage::disk('public')->delete($image->image_path);
+        });
     }
 }

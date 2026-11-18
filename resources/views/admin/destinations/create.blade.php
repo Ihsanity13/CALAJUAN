@@ -13,7 +13,7 @@
     </div>
 
     {{-- novalidate: Laravel checks the fields, so errors show in our style under each field. --}}
-    <form method="POST" action="{{ route('admin.destinations.store') }}" novalidate>
+    <form method="POST" action="{{ route('admin.destinations.store') }}" enctype="multipart/form-data" novalidate>
         @include('admin.destinations._form')
     </form>
 @endsection

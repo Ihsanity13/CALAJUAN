@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DestinationController;
+use App\Http\Controllers\Admin\DestinationImageController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +49,20 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::resource('destinations', DestinationController::class)
             ->except('show');
+
+        // PHOTOS of a destination (the upload itself happens in the destination form).
+        // scopeBindings(): the {image} must belong to the {destination} in the URL,
+        // otherwise Laravel answers 404. So nobody can change another place's photo
+        // by editing the numbers in the address.
+        Route::scopeBindings()->group(function () {
+            // Final name: admin.destinations.images.primary
+            Route::patch('destinations/{destination}/images/{image}/primary', [DestinationImageController::class, 'makePrimary'])
+                ->name('destinations.images.primary');
+
+            // Final name: admin.destinations.images.destroy
+            Route::delete('destinations/{destination}/images/{image}', [DestinationImageController::class, 'destroy'])
+                ->name('destinations.images.destroy');
+        });
     });
 
 // A page only regular users can open, to show the second role's access.

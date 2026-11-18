@@ -112,6 +112,84 @@
     <script src="{{ asset('js/map-picker.js') }}"></script>
 @endpush
 
+{{-- PHOTOS: pick several files at once (multiple). name="photos[]" sends them as a list.
+     Errors can be about the list ("photos") or about one file ("photos.0", "photos.1"...),
+     so we collect them all and show each different message once. --}}
+@php
+    $photoErrors = collect($errors->get('photos'))
+        ->merge(collect($errors->get('photos.*'))->flatten())
+        ->unique()
+        ->values();
+    // When editing, load the saved photos once (primary first, see images() in Destination.php)
+    $savedPhotos = isset($destination) ? $destination->images : collect();
+    $photoCount = $savedPhotos->count();
+@endphp
+
+<div class="field" id="photos-section">
+    {{-- SAVED PHOTOS (edit page only). The buttons use form="..." to submit the small
+         forms printed AFTER the main form in edit.blade.php, because HTML doesn't
+         allow a form inside another form. --}}
+    @if ($photoCount > 0)
+        <span class="field-label">Saved photos</span>
+        <p class="field-hint">Photo buttons take effect right away. Save other changes on this page first.</p>
+        <ul class="photo-grid" role="list">
+            @foreach ($savedPhotos as $photo)
+                <li class="photo-item {{ $photo->is_primary ? 'is-primary' : '' }}">
+                    <div class="photo-thumb">
+                        <img src="{{ $photo->url }}"
+                             alt="Photo {{ $loop->iteration }} of {{ $destination->name }}"
+                             loading="lazy" width="320" height="240">
+                        @if ($photo->is_primary)
+                            <span class="badge badge-verified photo-badge">
+                                <x-icon name="star" size="14" fill="currentColor" /> Primary
+                            </span>
+                        @endif
+                    </div>
+
+                    <div class="photo-actions">
+                        @unless ($photo->is_primary)
+                            <button type="submit" class="btn btn-ghost btn-sm" form="photo-primary-{{ $photo->id }}"
+                                    aria-label="Make photo {{ $loop->iteration }} the primary photo">
+                                <x-icon name="star" size="16" /> Make primary
+                            </button>
+                        @endunless
+                        <button type="submit" class="btn btn-ghost btn-danger btn-sm" form="photo-delete-{{ $photo->id }}"
+                                aria-label="Delete photo {{ $loop->iteration }}">
+                            <x-icon name="trash" size="16" /> Delete
+                        </button>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    @endif
+
+    <label for="photos">
+        {{ $photoCount > 0 ? 'Add more photos' : 'Photos' }} <span class="optional">(optional)</span>
+    </label>
+    <input type="file" id="photos" name="photos[]" multiple
+           accept="image/jpeg,image/png,image/webp"
+           aria-describedby="photos-hint{{ $photoErrors->isNotEmpty() ? ' photos-error' : '' }}"
+           @if ($photoErrors->isNotEmpty()) aria-invalid="true" @endif>
+    <p class="field-hint" id="photos-hint">
+        JPG, PNG or WebP, up to 4 MB each. Up to 10 photos per place
+        @if ($photoCount > 0)
+            ({{ $photoCount }} saved, {{ max(0, 10 - $photoCount) }} left)@endif.
+        @if ($photoCount === 0)
+            The first photo becomes the primary photo shown on cards.
+        @endif
+    </p>
+    @if ($photoErrors->isNotEmpty())
+        <div id="photos-error">
+            @foreach ($photoErrors as $message)
+                <p class="field-error">
+                    <x-icon name="alert" size="16" />
+                    {{ $message }}
+                </p>
+            @endforeach
+        </div>
+    @endif
+</div>
+
 {{-- @checked(...) adds the "checked" attribute when the condition is true.
      An unticked checkbox sends nothing; DestinationRequest handles that. --}}
 <fieldset class="field check-group">
