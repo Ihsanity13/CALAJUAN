@@ -86,6 +86,12 @@
             <path d="M7 14.5h10a4 4 0 0 0 .6-7.95A5.5 5.5 0 0 0 7.1 5.6 4.5 4.5 0 0 0 7 14.5z" />
             <path d="m12.5 14.5-2 3.5h3l-2 3.5" />
             @break
+        @case('umbrella')
+            <path d="M3 12a9 9 0 0 1 18 0z" /><path d="M12 12v6.5a2 2 0 0 1-4 0" />
+            @break
+        @case('droplet')
+            <path d="M12 3s6 6.4 6 10.5a6 6 0 0 1-12 0C6 9.4 12 3 12 3z" />
+            @break
         @case('alert')
             <circle cx="12" cy="12" r="9" /><path d="M12 7.5v5.5M12 16.5h.01" />
             @break
