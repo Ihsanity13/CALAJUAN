@@ -80,6 +80,9 @@
 </section>
 
 <section class="container section" id="featured">
+    {{-- Today's weather in Calauan. Hides itself if the weather service is down. --}}
+    <x-weather-card class="home-weather" />
+
     <div class="section-head">
         <h2>Featured places</h2>
         <p class="muted">Verified places picked by our team.</p>

@@ -116,6 +116,9 @@
         </div>
 
         <aside class="detail-aside" aria-labelledby="location-heading">
+            {{-- Today's weather in Calauan. Hides itself if the weather service is down. --}}
+            <x-weather-card />
+
             <section class="card location-card">
                 <h2 id="location-heading">Location</h2>
 
