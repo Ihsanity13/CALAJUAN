@@ -15,6 +15,9 @@
 
     {{-- asset('css/app.css') builds the URL of the file in public/css/app.css --}}
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+
+    {{-- Pages can add their own CSS here with @push('styles') (e.g. the map on the destination form) --}}
+    @stack('styles')
 </head>
 
 {{-- $isAdmin / $isUser are worked out once here and reused by both navs below --}}
@@ -129,6 +132,9 @@
             </a>
         @endif
     </nav>
+
+    {{-- Pages can add their own JavaScript here with @push('scripts') --}}
+    @stack('scripts')
 </body>
 
 </html>

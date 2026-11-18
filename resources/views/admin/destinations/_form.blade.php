@@ -34,19 +34,83 @@
 <x-input name="description" label="Description" type="textarea" optional rows="4"
          :value="old('description', $destination->description ?? '')" />
 
-<x-input name="address" label="Address" optional :value="old('address', $destination->address ?? '')" />
+{{-- LOCATION: a Leaflet map instead of typing coordinates.
+     public/js/map-picker.js does the work: clicking the map drops a pin,
+     and the pin's position is copied into the two hidden inputs below,
+     which are what the form actually sends to Laravel.
+     The server still validates them (DestinationRequest). --}}
+@php
+    $lat = old('latitude', $destination->latitude ?? '');
+    $lng = old('longitude', $destination->longitude ?? '');
+    // Both fields share one message ("Drop a pin..."), so show it once
+    $locationError = $errors->first('latitude') ?: $errors->first('longitude');
+@endphp
 
-{{-- Two boxes side by side on wider screens (.form-row).
-     step="any" lets the number box accept decimals like 14.1467 --}}
-<div class="form-row">
-    <x-input name="latitude" label="Latitude" type="number" step="any" required
-             hint="Calauan is about 14.14"
-             :value="old('latitude', $destination->latitude ?? '')" />
+<div class="field" data-map-picker>
+    <span class="field-label" id="location-label">Location on the map</span>
+    <p class="field-hint" id="location-hint">
+        Click the map to drop a pin, then drag it to adjust.
+        Keyboard: arrow keys move the map, Enter drops the pin in the center.
+    </p>
 
-    <x-input name="longitude" label="Longitude" type="number" step="any" required
-             hint="Calauan is about 121.31"
-             :value="old('longitude', $destination->longitude ?? '')" />
+    <input type="hidden" name="latitude" value="{{ $lat }}" data-lat>
+    <input type="hidden" name="longitude" value="{{ $lng }}" data-lng>
+
+    {{-- The map draws itself in here. Default center: Calauan, Laguna. --}}
+    <div class="map-picker {{ $locationError ? 'is-invalid' : '' }}"
+         data-map
+         data-default-lat="14.1467" data-default-lng="121.3167" data-default-zoom="14"
+         role="application"
+         aria-labelledby="location-label"
+         aria-describedby="location-hint location-coords{{ $locationError ? ' location-error' : '' }}"
+         tabindex="0"></div>
+
+    <div class="map-bar">
+        {{-- aria-live: screen readers announce the new coordinates when the pin moves --}}
+        <p class="map-coords" id="location-coords" aria-live="polite" data-coords>
+            @if ($lat !== '' && $lng !== '')
+                Pin at {{ number_format((float) $lat, 5) }}, {{ number_format((float) $lng, 5) }}
+            @else
+                No pin yet
+            @endif
+        </p>
+
+        <button type="button" class="btn btn-outline btn-sm" data-locate>
+            <x-icon name="map-pin" size="16" />
+            Use my location
+        </button>
+    </div>
+
+    {{-- Error from the server, or from map-picker.js when you submit without a pin --}}
+    <p class="field-error" id="location-error" data-location-error @unless ($locationError) hidden @endunless>
+        <x-icon name="alert" size="16" />
+        <span data-location-error-text>{{ $locationError ?: 'Drop a pin on the map to set the location.' }}</span>
+    </p>
 </div>
+
+{{-- ADDRESS: below the map, because map-picker.js fills it in from the pin
+     (it never overwrites an address you typed yourself; it offers a button instead). --}}
+<x-input name="address" label="Address" optional :value="old('address', $destination->address ?? '')"
+         hint="Filled in from the pin. You can edit it." maxlength="255" />
+
+{{-- Messages from the address lookup ("Looking up the address…", "Use this address") --}}
+<div class="address-lookup" data-address-lookup aria-live="polite" hidden>
+    <p class="address-lookup-text" data-address-lookup-text></p>
+    <button type="button" class="btn btn-ghost btn-sm" data-address-use hidden>Use this address</button>
+</div>
+
+{{-- Leaflet comes from its official CDN (no npm). integrity = a fingerprint of the
+     file, so the browser refuses it if anyone ever changes it on the CDN. --}}
+@push('styles')
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+@endpush
+
+@push('scripts')
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="{{ asset('js/map-picker.js') }}"></script>
+@endpush
 
 {{-- @checked(...) adds the "checked" attribute when the condition is true.
      An unticked checkbox sends nothing; DestinationRequest handles that. --}}
