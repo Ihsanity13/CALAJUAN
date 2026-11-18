@@ -1,38 +1,35 @@
 @extends('layouts.app')
 
-@section('title', 'Register')
+@section('title', 'Create an account')
 
 @section('content')
-    <h1>Create an account</h1>
+    <div class="auth-head">
+        <span class="brand-mark brand-mark-lg" aria-hidden="true"></span>
+        <h1>Create an account</h1>
+        <p class="muted">Save places you like and get suggestions around Calauan.</p>
+    </div>
 
-    <form method="POST" action="{{ route('register') }}">
+    {{-- novalidate: let Laravel check the fields, so errors show in our own style under each field. --}}
+    <form method="POST" action="{{ route('register') }}" novalidate>
         @csrf
 
-        <label for="name">Name</label>
-        <input type="text" id="name" name="name" value="{{ old('name') }}" required autofocus>
-        @error('name')
-            <div class="error">{{ $message }}</div>
-        @enderror
+        <x-input name="name" label="Name" :value="old('name')"
+                 autocomplete="name" required autofocus />
 
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" value="{{ old('email') }}" required>
-        @error('email')
-            <div class="error">{{ $message }}</div>
-        @enderror
+        <x-input name="email" label="Email" type="email" :value="old('email')"
+                 autocomplete="email" required />
 
-        <label for="password">Password (at least 8 characters)</label>
-        <input type="password" id="password" name="password" required>
-        @error('password')
-            <div class="error">{{ $message }}</div>
-        @enderror
+        <x-input name="password" label="Password" type="password"
+                 hint="At least 8 characters." autocomplete="new-password" required />
 
         {{-- The field must be named password_confirmation, because the
-             'confirmed' rule in the controller looks for that exact name. --}}
-        <label for="password_confirmation">Confirm password</label>
-        <input type="password" id="password_confirmation" name="password_confirmation" required>
+             'confirmed' rule in the controller looks for that exact name.
+             A mismatch is reported under the Password field above. --}}
+        <x-input name="password_confirmation" label="Confirm password" type="password"
+                 autocomplete="new-password" required />
 
-        <button type="submit" class="btn">Register</button>
+        <button type="submit" class="btn btn-gold btn-block auth-submit">Create account</button>
     </form>
 
-    <p>Already have an account? <a href="{{ route('login') }}">Log in</a></p>
+    <p class="auth-foot">Already have an account? <a href="{{ route('login') }}">Log in</a></p>
 @endsection
