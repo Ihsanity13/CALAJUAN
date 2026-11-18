@@ -3,62 +3,132 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Calajuan')</title>
+    {{-- viewport-fit=cover lets the bottom tab bar sit above the iPhone home bar --}}
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#2c4a2a">
+    <title>@yield('title', 'Calajuan') · Calajuan</title>
 
     {{-- Fonts from Google. If you're offline, the page falls back to Georgia and your system font. --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600&family=Young+Serif&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Young+Serif&display=swap" rel="stylesheet">
 
     {{-- asset('css/app.css') builds the URL of the file in public/css/app.css --}}
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 
+{{-- $isAdmin / $isUser are worked out once here and reused by both navs below --}}
+@php
+    $isAdmin = auth()->check() && auth()->user()->isAdmin();
+    $isUser = auth()->check() && ! $isAdmin;
+@endphp
+
 <body>
-    <header class="site-header">
-        <a class="brand" href="{{ route('home') }}">
-            {{-- aria-hidden: screen readers skip this purely decorative logo --}}
-            <span class="brand-mark" aria-hidden="true"></span>
-            Calajuan
-        </a>
+    {{-- Lets keyboard users jump past the header straight to the page content --}}
+    <a class="skip-link" href="#main">Skip to content</a>
 
-        <nav class="nav">
-            {{-- @auth = shown only to logged-in users; @else = shown to guests --}}
-            @auth
-            {{-- Show the link that fits the user's role --}}
-            @if (auth()->user()->isAdmin())
-            <a class="nav-link" href="{{ route('admin.dashboard') }}">Admin dashboard</a>
-            @else
-            <a class="nav-link" href="{{ route('user.profile') }}">My profile</a>
-            @endif
+    <header class="site-header on-dark">
+        <div class="container header-inner">
+            <a class="brand" href="{{ route('home') }}">
+                {{-- aria-hidden: screen readers skip this purely decorative logo --}}
+                <span class="brand-mark" aria-hidden="true"></span>
+                Calajuan
+            </a>
 
-            <span class="nav-user">{{ auth()->user()->name }}</span>
+            {{-- DESKTOP NAV: hidden on phones, where the bottom tab bar takes over.
+                 aria-current="page" marks the link for the page you're on. --}}
+            <nav class="top-nav" aria-label="Main">
+                <a class="nav-link" href="{{ route('home') }}"
+                   @if (request()->routeIs('home')) aria-current="page" @endif>Explore</a>
 
-            {{-- Logout is a POST form; @csrf adds the security token Laravel requires --}}
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="btn btn-outline">Log out</button>
-            </form>
-            @else
-            <a class="nav-link" href="{{ route('login') }}">Log in</a>
-            <a class="btn btn-gold" href="{{ route('register') }}">Register</a>
-            @endauth
-        </nav>
+                @if ($isAdmin)
+                    <a class="nav-link" href="{{ route('admin.dashboard') }}"
+                       @if (request()->routeIs('admin.*')) aria-current="page" @endif>Dashboard</a>
+                @elseif ($isUser)
+                    <a class="nav-link" href="{{ route('user.profile') }}#saved">Saved</a>
+                    <a class="nav-link" href="{{ route('user.profile') }}"
+                       @if (request()->routeIs('user.profile')) aria-current="page" @endif>Profile</a>
+                @endif
+            </nav>
+
+            {{-- ACCOUNT ACTIONS: shown on every screen size --}}
+            <div class="header-actions">
+                {{-- @auth = shown only to logged-in users; @else = shown to guests --}}
+                @auth
+                    <span class="nav-user">{{ auth()->user()->name }}</span>
+
+                    {{-- Logout is a POST form; @csrf adds the security token Laravel requires --}}
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-outline btn-sm">
+                            <x-icon name="logout" size="18" />
+                            Log out
+                        </button>
+                    </form>
+                @else
+                    <a class="nav-link nav-login" href="{{ route('login') }}"
+                       @if (request()->routeIs('login')) aria-current="page" @endif>Log in</a>
+                    <a class="btn btn-gold btn-sm" href="{{ route('register') }}">Register</a>
+                @endauth
+            </div>
+        </div>
     </header>
 
-    <main class="@yield('main_class')">
+    {{-- main_class: "narrow" (default, a centered card for forms),
+         "wide" (a wider card for tables), "full" (no card, the page lays itself out) --}}
+    <main id="main" class="site-main @yield('main_class', 'narrow')" tabindex="-1">
         {{-- One-time message from a controller's ->with('success', ...) --}}
         @if (session('success'))
-        <div class="success">{{ session('success') }}</div>
+            <div class="flash">
+                <x-alert type="success">{{ session('success') }}</x-alert>
+            </div>
         @endif
 
         @yield('content')
     </main>
 
-    <footer class="site-footer">
-        Calajuan, a tourism guide for Calauan, Laguna.
+    <footer class="site-footer on-dark">
+        <div class="container footer-inner">
+            <a class="brand brand-sm" href="{{ route('home') }}">
+                <span class="brand-mark" aria-hidden="true"></span>
+                Calajuan
+            </a>
+            <p>A tourism guide for Calauan, Laguna.</p>
+        </div>
     </footer>
+
+    {{-- PHONE TAB BAR: fixed to the bottom of the screen, hidden on desktop.
+         Guests are sent to log in for Saved and Profile. --}}
+    <nav class="tab-bar" aria-label="Main">
+        <a class="tab" href="{{ route('home') }}"
+           @if (request()->routeIs('home')) aria-current="page" @endif>
+            <x-icon name="compass" />
+            <span>Explore</span>
+        </a>
+
+        @if ($isAdmin)
+            <a class="tab" href="{{ route('admin.dashboard') }}"
+               @if (request()->routeIs('admin.dashboard')) aria-current="page" @endif>
+                <x-icon name="grid" />
+                <span>Dashboard</span>
+            </a>
+            <a class="tab" href="{{ route('admin.destinations.index') }}"
+               @if (request()->routeIs('admin.destinations.*')) aria-current="page" @endif>
+                <x-icon name="map-pin" />
+                <span>Places</span>
+            </a>
+        @else
+            <a class="tab" href="{{ $isUser ? route('user.profile') . '#saved' : route('login') }}">
+                <x-icon name="heart" />
+                <span>Saved</span>
+            </a>
+            <a class="tab" href="{{ $isUser ? route('user.profile') : route('login') }}"
+               @if (request()->routeIs('user.profile', 'login', 'register')) aria-current="page" @endif>
+                <x-icon name="user" />
+                <span>Profile</span>
+            </a>
+        @endif
+    </nav>
 </body>
 
 </html>

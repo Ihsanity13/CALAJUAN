@@ -19,6 +19,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
         ]);
+
+        // TRUSTED PROXIES: the cloudflared tunnel runs on this same machine and
+        // forwards visitors to 127.0.0.1:8000, adding "X-Forwarded-Proto: https".
+        // Trusting only localhost makes Laravel believe that header, so asset()
+        // and route() build https:// links behind the tunnel (no mixed content).
+        // Opening http://127.0.0.1:8000 directly sends no such header, so it stays http.
+        // Only localhost is trusted, so outside visitors can't fake the header.
+        $middleware->trustProxies(at: ['127.0.0.1', '::1']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

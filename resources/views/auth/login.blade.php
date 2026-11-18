@@ -3,47 +3,33 @@
 @section('title', 'Log in')
 
 @section('content')
-    <style>
-        .btn {
-            background: #ffd83d;
-            color: #14260a;
-            border: 3px solid #ffd83d;
-        }
-        .btn:hover {
-            background: #ffe27a;
-            border-color: #ffe27a;
-        }
-    </style>
+    <div class="auth-head">
+        <span class="brand-mark brand-mark-lg" aria-hidden="true"></span>
+        <h1>Welcome back</h1>
+        <p class="muted">Log in to see your saved places.</p>
+    </div>
 
-    <h1>Log in</h1>
-    ...
-
-    {{-- The form sends a POST request to the 'login' route. --}}
-    <form method="POST" action="{{ route('login') }}">
+    {{-- The form sends a POST request to the 'login' route.
+         novalidate: let Laravel check the fields, so errors show in our own style under each field. --}}
+    <form method="POST" action="{{ route('login') }}" novalidate>
         {{-- @csrf: the security token Laravel requires on every POST form. --}}
         @csrf
 
-        <label for="email">Email</label>
         {{-- old('email') refills the field with what the user typed
              if the form comes back with errors. --}}
-        <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus>
-        {{-- @error shows the validation message for this field, if any. --}}
-        @error('email')
-            <div class="error">{{ $message }}</div>
-        @enderror
+        <x-input name="email" label="Email" type="email" :value="old('email')"
+                 autocomplete="email" required autofocus />
 
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required>
-        @error('password')
-            <div class="error">{{ $message }}</div>
-        @enderror
+        <x-input name="password" label="Password" type="password"
+                 autocomplete="current-password" required />
 
-        <label>
-            <input type="checkbox" name="remember"> Remember me
+        <label class="check">
+            <input type="checkbox" name="remember" @checked(old('remember'))>
+            <span>Remember me</span>
         </label>
 
-        <button type="submit" class="btn">Log in</button>
+        <button type="submit" class="btn btn-gold btn-block auth-submit">Log in</button>
     </form>
 
-    <p>No account yet? <a href="{{ route('register') }}">Register</a></p>
+    <p class="auth-foot">No account yet? <a href="{{ route('register') }}">Create one</a></p>
 @endsection
