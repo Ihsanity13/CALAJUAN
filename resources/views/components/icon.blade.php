@@ -67,6 +67,25 @@
         @case('logout')
             <path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4" /><path d="m15 8 4 4-4 4M19 12H9" />
             @break
+        {{-- weather icons --}}
+        @case('sun')
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4" />
+            @break
+        @case('moon')
+            <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
+            @break
+        @case('cloud')
+            <path d="M7 18.5h10a4 4 0 0 0 .6-7.95A5.5 5.5 0 0 0 7.1 9.6 4.5 4.5 0 0 0 7 18.5z" />
+            @break
+        @case('rain')
+            <path d="M7 14.5h10a4 4 0 0 0 .6-7.95A5.5 5.5 0 0 0 7.1 5.6 4.5 4.5 0 0 0 7 14.5z" />
+            <path d="M8.5 17.5 7.5 20M12.5 17.5l-1 2.5M16.5 17.5l-1 2.5" />
+            @break
+        @case('storm')
+            <path d="M7 14.5h10a4 4 0 0 0 .6-7.95A5.5 5.5 0 0 0 7.1 5.6 4.5 4.5 0 0 0 7 14.5z" />
+            <path d="m12.5 14.5-2 3.5h3l-2 3.5" />
+            @break
         @case('alert')
             <circle cx="12" cy="12" r="9" /><path d="M12 7.5v5.5M12 16.5h.01" />
             @break
