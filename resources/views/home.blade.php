@@ -8,8 +8,14 @@
 <section class="hero on-dark">
     <div class="container hero-inner">
         <div class="hero-copy">
-            <h1>Find where to go in Calauan.</h1>
-            <p>Browse places around town, save the ones you like, and get suggestions based on what you enjoy.</p>
+            <p class="hero-eyebrow">
+                <x-icon name="map-pin" size="16" />
+                Calauan, Laguna
+            </p>
+
+            {{-- .accent colors the town's name pale gold --}}
+            <h1>Find where to go in <span class="accent">Calauan</span>.</h1>
+            <p class="hero-lead">Browse places around town, save the ones you like, and get suggestions based on what you enjoy.</p>
 
             <div class="hero-actions">
                 @auth
@@ -26,8 +32,9 @@
         </div>
 
         {{-- THE PINEAPPLE: the one bold element on the site.
-                 The "skin" pattern draws the diamond lattice. --}}
-        <svg class="hero-art" viewBox="0 0 220 320" role="img" aria-label="Illustration of a pineapple">
+             The "skin" pattern draws the diamond lattice.
+             aria-hidden: it's decoration, so screen readers skip it. --}}
+        <svg class="hero-art" viewBox="0 0 220 320" aria-hidden="true" focusable="false">
             <defs>
                 {{-- The two gradients match --grad-crown and --grad-fruit (160deg).
                      Their colors come from the CSS tokens (see .hero-art in app.css). --}}
@@ -53,6 +60,9 @@
                     <circle class="lattice-eye" cx="36" cy="18" r="2.4" />
                 </pattern>
             </defs>
+
+            {{-- A soft pale disc behind the fruit, so it stands out from the green --}}
+            <circle class="halo" cx="110" cy="190" r="104" />
 
             {{-- Leaves, back to front: outer, middle, center. One crown gradient
                  runs across all of them: light tips, dark base. --}}
