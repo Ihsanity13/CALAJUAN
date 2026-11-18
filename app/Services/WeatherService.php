@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -22,11 +23,14 @@ class WeatherService
     private const LONGITUDE = 121.3167;
 
     private const URL = 'https://api.open-meteo.com/v1/forecast';
-    private const CACHE_KEY = 'weather:calauan';
+    // ":v2" because the cached data's shape changed (tips now have icons, plus "updated").
+    // A new key means old cached weather in the old shape is simply ignored.
+    private const CACHE_KEY = 'weather:calauan:v2';
 
     // Returns the weather as an array, or null if it isn't available right now:
     // ['temperature' => 26, 'condition' => 'Mostly clear', 'icon' => 'moon',
-    //  'rain_chance' => 89, 'tips' => ['Bring an umbrella']]
+    //  'rain_chance' => 89, 'severe' => false, 'updated' => '8:30 PM',
+    //  'tips' => [['icon' => 'umbrella', 'text' => 'Bring an umbrella']]]
     public function current(): ?array
     {
         // 1. Cached answer (good or failed) from the last 30 / 5 minutes?
@@ -80,20 +84,28 @@ class WeatherService
 
         [$condition, $icon] = $this->describe($code, $isDay);
 
-        // Simple advice for visitors
+        // Simple advice for visitors. Each tip has an icon too, so the meaning
+        // isn't carried by the pill's color alone.
         $tips = [];
         if ($rainChance !== null && $rainChance >= 60) {
-            $tips[] = 'Bring an umbrella';
+            $tips[] = ['icon' => 'umbrella', 'text' => 'Bring an umbrella'];
         }
         if ($temperature >= 33) {
-            $tips[] = 'Stay hydrated';
+            $tips[] = ['icon' => 'droplet', 'text' => 'Stay hydrated'];
         }
+
+        // When Open-Meteo measured it, in Calauan's time (we asked for Asia/Manila).
+        // Shown as "Updated 8:30 PM", because the card can be up to 30 minutes old.
+        $measuredAt = data_get($data, 'current.time');
 
         return [
             'temperature' => (int) round($temperature),
             'condition' => $condition,
             'icon' => $icon,
             'rain_chance' => $rainChance !== null ? (int) $rainChance : null,
+            'severe' => $icon === 'storm',
+            'updated' => $measuredAt ? Carbon::parse($measuredAt, 'Asia/Manila')->format('g:i A') : null,
+            'updated_iso' => $measuredAt ? Carbon::parse($measuredAt, 'Asia/Manila')->toIso8601String() : null,
             'tips' => $tips,
         ];
     }
