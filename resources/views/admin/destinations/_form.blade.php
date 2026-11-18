@@ -34,6 +34,142 @@
 <x-input name="description" label="Description" type="textarea" optional rows="4"
          :value="old('description', $destination->description ?? '')" />
 
+@php
+    // After a failed save, show exactly what was submitted. An unticked checkbox
+    // sends nothing, so "missing from the old input" must mean "unticked",
+    // not "use the saved value". $hasOld tells the two situations apart.
+    $hasOld = session()->hasOldInput();
+@endphp
+
+{{-- INTERESTS: what the place is good for. Recommendations match these
+     against the interests a visitor picks. Managed under Dashboard > Interests. --}}
+@php
+    $chosenInterests = $hasOld
+        ? array_map('intval', (array) old('interests', []))
+        : (isset($destination) ? $destination->interests->pluck('id')->all() : []);
+@endphp
+<fieldset class="field check-group">
+    <legend class="field-label">Interests <span class="optional">(optional)</span></legend>
+    <p class="field-hint">Tick everything this place is good for. Used for recommendations.</p>
+
+    @if ($interests->isEmpty())
+        <p class="muted">No interests yet. <a href="{{ route('admin.interests.create') }}">Add some first</a>.</p>
+    @else
+        <div class="check-chips">
+            @foreach ($interests as $interest)
+                <label class="check-chip">
+                    <input type="checkbox" name="interests[]" value="{{ $interest->id }}"
+                           @checked(in_array($interest->id, $chosenInterests, true))>
+                    <span>{{ $interest->name }}</span>
+                </label>
+            @endforeach
+        </div>
+    @endif
+
+    @if ($errors->has('interests') || $errors->has('interests.*'))
+        <p class="field-error">
+            <x-icon name="alert" size="16" />
+            {{ $errors->first('interests') ?: $errors->first('interests.*') }}
+        </p>
+    @endif
+</fieldset>
+
+{{-- PRICE: the level is what the budget filter uses; the note gives the details --}}
+<div class="form-row">
+    <div class="field">
+        <label for="price_level">Price level <span class="optional">(optional)</span></label>
+        <select id="price_level" name="price_level"
+                @error('price_level') aria-invalid="true" aria-describedby="price_level-error" @enderror>
+            <option value="">Not set</option>
+            @foreach (\App\Models\Destination::PRICE_LEVELS as $level => $price)
+                <option value="{{ $level }}"
+                    @selected((string) old('price_level', $destination->price_level ?? '') === (string) $level)>
+                    {{ $price['symbol'] === $price['label'] ? $price['label'] : $price['symbol'] . ' · ' . $price['label'] }}
+                </option>
+            @endforeach
+        </select>
+        @error('price_level')
+            <p class="field-error" id="price_level-error"><x-icon name="alert" size="16" /> {{ $message }}</p>
+        @enderror
+    </div>
+
+    <x-input name="price_note" label="Price details" optional maxlength="255"
+             :value="old('price_note', $destination->price_note ?? '')"
+             hint="e.g. Entrance ₱50 per adult, cottages from ₱500" />
+</div>
+
+{{-- CONTACT DETAILS --}}
+<div class="form-row">
+    <x-input name="phone" label="Phone" type="tel" optional maxlength="30" autocomplete="off"
+             :value="old('phone', $destination->phone ?? '')" hint="e.g. 0917 123 4567" />
+    <x-input name="email" label="Email" type="email" optional maxlength="255" autocomplete="off"
+             :value="old('email', $destination->email ?? '')" />
+</div>
+<div class="form-row">
+    <x-input name="website" label="Website" type="url" optional maxlength="255"
+             :value="old('website', $destination->website ?? '')" hint="e.g. https://example.com" />
+    <x-input name="facebook" label="Facebook page" optional maxlength="255"
+             :value="old('facebook', $destination->facebook ?? '')" hint="e.g. facebook.com/yourpage" />
+</div>
+
+{{-- OPENING HOURS: one row per day, Monday first. Tick the days it's open.
+     No day ticked = "hours not listed". See the destination_hours migration for the rules. --}}
+@php
+    $savedHours = isset($destination) ? $destination->hours->keyBy('day') : collect();
+@endphp
+<fieldset class="field hours-fieldset" data-hours>
+    <legend class="field-label">Opening hours <span class="optional">(optional)</span></legend>
+    <p class="field-hint" id="hours-hint">
+        Tick the days it's open. Closing earlier than opening = closes after midnight.
+        Same opening and closing time = open 24 hours. Leave every day unticked if you don't know the hours.
+    </p>
+
+    <ul class="hours-list" role="list">
+        @foreach (\App\Models\DestinationHour::WEEK_ORDER as $day)
+            @php
+                $dayName = \App\Models\DestinationHour::DAYS[$day];
+                $saved = $savedHours->get($day);
+                $isOpen = $hasOld ? (bool) old("hours.$day.open") : $saved !== null;
+                $opensAt = old("hours.$day.opens_at", $saved?->opensAt() ?? '08:00');
+                $closesAt = old("hours.$day.closes_at", $saved?->closesAt() ?? '17:00');
+                $dayError = $errors->first("hours.$day.opens_at") ?: $errors->first("hours.$day.closes_at");
+            @endphp
+            {{-- CSS (:has) hides the time boxes while the day is unticked and shows "Closed" --}}
+            <li class="hours-row" data-hours-row>
+                <label class="check hours-day">
+                    <input type="checkbox" name="hours[{{ $day }}][open]" value="1" @checked($isOpen) data-hours-open>
+                    <span>{{ $dayName }}</span>
+                </label>
+
+                <div class="hours-times">
+                    <label class="sr-only" for="hours-{{ $day }}-opens">{{ $dayName }} opens at</label>
+                    <input type="time" id="hours-{{ $day }}-opens" name="hours[{{ $day }}][opens_at]"
+                           value="{{ $opensAt }}" data-hours-opens
+                           @if ($dayError) aria-invalid="true" aria-describedby="hours-{{ $day }}-error" @endif>
+                    <span aria-hidden="true">to</span>
+                    <label class="sr-only" for="hours-{{ $day }}-closes">{{ $dayName }} closes at</label>
+                    <input type="time" id="hours-{{ $day }}-closes" name="hours[{{ $day }}][closes_at]"
+                           value="{{ $closesAt }}" data-hours-closes
+                           @if ($dayError) aria-invalid="true" aria-describedby="hours-{{ $day }}-error" @endif>
+                    <span class="hours-closed-text">Closed</span>
+                </div>
+
+                @if ($dayError)
+                    <p class="field-error" id="hours-{{ $day }}-error">
+                        <x-icon name="alert" size="16" /> {{ $dayName }}: {{ $dayError }}
+                    </p>
+                @endif
+            </li>
+        @endforeach
+    </ul>
+
+    {{-- Shortcut: copy Monday's hours to the other days (public/js/hours-form.js) --}}
+    <button type="button" class="btn btn-ghost btn-sm" data-hours-copy hidden>
+        <x-icon name="check" size="16" /> Copy Monday's hours to every day
+    </button>
+    <p class="sr-only" aria-live="polite" data-hours-status></p>
+</fieldset>
+
 {{-- LOCATION: a Leaflet map instead of typing coordinates.
      public/js/map-picker.js does the work: clicking the map drops a pin,
      and the pin's position is copied into the two hidden inputs below,
@@ -110,6 +246,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="{{ asset('js/map-picker.js') }}"></script>
+    <script src="{{ asset('js/hours-form.js') }}"></script>
 @endpush
 
 {{-- PHOTOS: pick several files at once (multiple). name="photos[]" sends them as a list.
@@ -190,24 +327,36 @@
     @endif
 </div>
 
-{{-- @checked(...) adds the "checked" attribute when the condition is true.
-     An unticked checkbox sends nothing; DestinationRequest handles that. --}}
+{{-- LABELS. @checked(...) adds the "checked" attribute when the condition is true.
+     An unticked checkbox sends nothing; DestinationRequest handles that,
+     and $hasOld (above) keeps an unticked box unticked after a failed save. --}}
+@php
+    $label = fn (string $field) => $hasOld ? (bool) old($field) : (bool) ($destination->$field ?? false);
+@endphp
 <fieldset class="field check-group">
-    <legend class="field-label">Visibility</legend>
+    <legend class="field-label">Labels</legend>
 
     <label class="check">
-        <input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $destination->is_featured ?? false))>
+        <input type="checkbox" name="is_featured" value="1" @checked($label('is_featured'))>
         <span class="check-text">
-            Featured
-            <small>Shown on the home page (only if it's also verified).</small>
+            <span aria-hidden="true">⭐</span> Featured
+            <small>Shown on the home page.</small>
         </span>
     </label>
 
     <label class="check">
-        <input type="checkbox" name="is_verified" value="1" @checked(old('is_verified', $destination->is_verified ?? false))>
+        <input type="checkbox" name="is_hot" value="1" @checked($label('is_hot'))>
         <span class="check-text">
-            Verified
-            <small>The tourism information has been checked.</small>
+            <span aria-hidden="true">🔥</span> Hot
+            <small>Popular right now. Shows a "Hot" badge on the place.</small>
+        </span>
+    </label>
+
+    <label class="check">
+        <input type="checkbox" name="is_new" value="1" @checked($label('is_new'))>
+        <span class="check-text">
+            <span aria-hidden="true">✨</span> New
+            <small>Recently opened or just added. Shows a "New" badge on the place.</small>
         </span>
     </label>
 </fieldset>

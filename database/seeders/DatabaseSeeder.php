@@ -12,9 +12,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Run the category seeder first. Destinations will need categories
-        // to exist, so the order matters.
+        // to exist, so the order matters. Interests come before
+        // destinations too, because the sample places are tagged with them.
         $this->call([
             CategorySeeder::class,
+            InterestSeeder::class,
             DestinationSeeder::class,
         ]);
 

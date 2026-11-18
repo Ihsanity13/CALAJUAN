@@ -35,12 +35,8 @@
         </h3>
 
         <div class="dest-meta">
-            @if ($destination->is_verified)
-                <span class="badge badge-verified">
-                    <x-icon name="verified" size="14" />
-                    Verified
-                </span>
-            @endif
+            {{-- 🔥 Hot / ✨ New badges (nothing when the place has neither) --}}
+            <x-place-labels :destination="$destination" />
 
             @if ($avg)
                 {{-- The visible "4.5 (12)" is short; screen readers hear the full sentence --}}
@@ -51,6 +47,13 @@
                 </span>
             @else
                 <span class="rating rating-none">No reviews yet</span>
+            @endif
+
+            @if ($price = $destination->price())
+                <span class="price-level" title="{{ $price['label'] }}">
+                    <span aria-hidden="true">{{ $price['symbol'] }}</span>
+                    <span class="sr-only">Price: {{ $price['label'] }}</span>
+                </span>
             @endif
         </div>
 

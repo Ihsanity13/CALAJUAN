@@ -950,6 +950,37 @@ a.card:hover,
     color: var(--muted);
 }
 
+/* Place labels: ⭐ Featured / 🔥 Hot / ✨ New (the emoji is decoration; the word carries the meaning) */
+.badge-featured {
+    background: var(--fruit-100);
+    color: var(--skin-text);          /* 5.9:1 */
+}
+
+.badge-hot {
+    background: #fde4d0;              /* pale ember */
+    color: #9a3412;                   /* 6.6:1 on the ember tint */
+}
+
+.badge-new {
+    background: var(--leaf-050);
+    color: var(--leaf-700);           /* 6.1:1 */
+}
+
+/* Several labels in one admin table cell */
+.label-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+}
+
+/* ₱ / ₱₱ / ₱₱₱ on cards and the detail page */
+.price-level {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--leaf-700);
+    letter-spacing: 0.02em;
+}
+
 /* ---- Chips: a row that scrolls sideways on small screens ---- */
 .chip-row {
     display: flex;
@@ -1196,6 +1227,126 @@ input[type=checkbox] {
 
 .check-group input[type=checkbox] {
     margin-top: 3px;
+}
+
+
+/* ---- Interest checkboxes on the destination form: tappable pills ---- */
+.check-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+}
+
+.check-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--touch);
+    padding: 0 var(--space-4) 0 var(--space-3);
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color var(--fast) var(--ease), background-color var(--fast) var(--ease);
+}
+
+.check-chip:hover {
+    border-color: var(--leaf-500);
+}
+
+.check-chip:has(input:checked) {
+    border-color: var(--leaf-700);
+    background: var(--leaf-050);
+}
+
+.check-chip:has(input:focus-visible) {
+    outline: 3px solid var(--leaf-300);
+    outline-offset: 2px;
+}
+
+/* ---- Opening hours on the destination form ---- */
+.hours-fieldset {
+    margin-inline: 0;
+    padding: 0;
+    border: 0;
+}
+
+.hours-fieldset legend {
+    padding: 0;
+}
+
+.hours-list {
+    margin: var(--space-2) 0 var(--space-3);
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+}
+
+.hours-row {
+    display: grid;
+    grid-template-columns: 9.5rem 1fr;
+    align-items: center;
+    gap: 0 var(--space-3);
+    padding: var(--space-1) var(--space-3);
+}
+
+.hours-row + .hours-row {
+    border-top: 1px solid var(--line);
+}
+
+.hours-row .check {
+    margin: 0;
+}
+
+.hours-times {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--muted);
+    font-size: var(--text-sm);
+}
+
+.hours-times input[type=time] {
+    width: auto;
+    min-width: 8.5rem;
+    min-height: var(--touch);
+}
+
+/* The "Closed" text only shows while the day is unticked... */
+.hours-closed-text {
+    display: none;
+    font-weight: 600;
+}
+
+/* ...and then the time boxes are hidden (no JavaScript needed) */
+.hours-row:has([data-hours-open]:not(:checked)) .hours-times > :not(.hours-closed-text) {
+    display: none;
+}
+
+.hours-row:has([data-hours-open]:not(:checked)) .hours-closed-text {
+    display: inline;
+}
+
+.hours-row .field-error {
+    grid-column: 1 / -1;
+    margin-bottom: var(--space-2);
+}
+
+@media (max-width: 479px) {
+    .hours-row {
+        grid-template-columns: 1fr;
+        padding-bottom: var(--space-2);
+    }
+
+    .hours-times {
+        padding-left: calc(20px + var(--space-3));   /* line up under the day name */
+    }
 }
 
 /* ---- Map picker (destination form) ----
@@ -2052,6 +2203,170 @@ tbody tr:hover td {
 
 .admin-tile:hover .tile-link {
     gap: var(--space-2);
+}
+
+
+/* ---- Admin dashboard: quick numbers ---- */
+.stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    gap: var(--space-4);
+    margin: 0 0 var(--space-6);
+    padding: 0;
+    list-style: none;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4) var(--space-5);
+}
+
+.stat-value {
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    line-height: 1.1;
+    color: var(--ink);
+}
+
+.stat-label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.stat-hot {
+    border-top: 4px solid var(--fruit-700);
+}
+
+.stat-new {
+    border-top: 4px solid var(--leaf-300);
+}
+
+/* ---- Destination page: interests, prices, hours, contact ---- */
+.detail-subhead {
+    margin: var(--space-5) 0 var(--space-2);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    font-weight: 700;
+}
+
+.interest-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.interest-pill {
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--leaf-050);
+    color: var(--leaf-700);
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+
+.price-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+}
+
+.info-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-5);
+}
+
+.info-card h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-size: var(--text-xl);
+}
+
+.info-card h2 .icon {
+    color: var(--leaf-700);
+}
+
+.info-card p {
+    margin: 0;
+}
+
+/* Open now (green) / Closed now (red): words, not just color */
+.open-status {
+    font-weight: 700;
+}
+
+.open-status.is-open {
+    color: var(--leaf-700);
+}
+
+.open-status.is-closed {
+    color: var(--danger);
+}
+
+.hours-table {
+    margin: 0;
+    font-size: var(--text-sm);
+}
+
+.hours-line {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+}
+
+.hours-line dt {
+    font-weight: 600;
+}
+
+.hours-line dd {
+    margin: 0;
+    text-align: right;
+    color: var(--muted);
+}
+
+.hours-line.is-today {
+    background: var(--fruit-100);
+}
+
+.hours-line.is-today dt,
+.hours-line.is-today dd {
+    color: var(--ink);
+    font-weight: 700;
+}
+
+.contact-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.contact-list a {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--touch);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.contact-list .icon {
+    flex-shrink: 0;
+    color: var(--leaf-700);
 }
 
 

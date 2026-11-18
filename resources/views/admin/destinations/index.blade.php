@@ -26,8 +26,7 @@
                 <tr>
                     <th scope="col">Name</th>
                     <th scope="col">Category</th>
-                    <th scope="col">Featured</th>
-                    <th scope="col">Verified</th>
+                    <th scope="col">Labels</th>
                     <th scope="col" class="cell-actions"><span class="sr-only">Actions</span></th>
                 </tr>
             </thead>
@@ -43,19 +42,14 @@
                         {{-- $destination->category uses the belongsTo relationship from the model.
                              It was preloaded with with('category') in the controller. --}}
                         <td><span class="tag">{{ $destination->category->name }}</span></td>
-                        {{-- is_featured / is_verified are real booleans because of the casts in the model. --}}
+                        {{-- ⭐ Featured / 🔥 Hot / ✨ New, or a dash when it has none --}}
                         <td>
-                            @if ($destination->is_featured)
-                                <span class="badge badge-yes"><x-icon name="check" size="14" /> Yes</span>
+                            @if ($destination->is_featured || $destination->is_hot || $destination->is_new)
+                                <div class="label-list">
+                                    <x-place-labels :destination="$destination" featured />
+                                </div>
                             @else
-                                <span class="badge badge-no">No</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if ($destination->is_verified)
-                                <span class="badge badge-yes"><x-icon name="verified" size="14" /> Yes</span>
-                            @else
-                                <span class="badge badge-no">No</span>
+                                <span class="badge badge-no">None</span>
                             @endif
                         </td>
                         <td class="cell-actions">
@@ -79,7 +73,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="table-empty">
+                        <td colspan="4" class="table-empty">
                             No destinations yet. <a href="{{ route('admin.destinations.create') }}">Add the first one</a>.
                         </td>
                     </tr>

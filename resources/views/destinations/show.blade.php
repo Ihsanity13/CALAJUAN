@@ -9,6 +9,14 @@
     // Google Maps directions from wherever the visitor is, to this place
     $directionsUrl = 'https://www.google.com/maps/dir/?api=1&destination='
         . $destination->latitude . ',' . $destination->longitude;
+
+    // Opening hours: open right now (true/false), or null when the hours aren't listed
+    $openNow = $destination->isOpenAt();
+    $today = now(\App\Models\Destination::TIMEZONE)->dayOfWeek;
+    $hoursByDay = $destination->hours->keyBy('day');
+
+    $price = $destination->price();
+    $hasContact = $destination->phone || $destination->email || $destination->website || $destination->facebook;
 @endphp
 
 <div class="container detail">
@@ -30,15 +38,11 @@
         @endguest
     </div>
 
-    {{-- HEADER: category, verified, name, rating, address --}}
+    {{-- HEADER: category, labels, name, rating, open now, address --}}
     <header class="detail-head">
         <div class="dest-meta">
             <span class="tag">{{ $destination->category->name }}</span>
-            @if ($destination->is_verified)
-                <span class="badge badge-verified">
-                    <x-icon name="verified" size="14" /> Verified
-                </span>
-            @endif
+            <x-place-labels :destination="$destination" />
         </div>
 
         <h1>{{ $destination->name }}</h1>
@@ -51,6 +55,19 @@
                 <a href="#reviews">{{ $reviewCount }} {{ \Illuminate\Support\Str::plural('review', $reviewCount) }}</a>
             @else
                 <span class="muted">No reviews yet</span>
+            @endif
+
+            {{-- Open now / Closed now (only when the hours are listed) --}}
+            @if ($openNow !== null)
+                <span aria-hidden="true">·</span>
+                <a href="#hours-heading" @class(['open-status', 'is-open' => $openNow, 'is-closed' => ! $openNow])>
+                    {{ $openNow ? 'Open now' : 'Closed now' }}
+                </a>
+            @endif
+
+            @if ($price)
+                <span aria-hidden="true">·</span>
+                <span class="price-level">{{ $price['symbol'] }}<span class="sr-only"> ({{ $price['label'] }})</span></span>
             @endif
         </p>
 
@@ -71,6 +88,31 @@
                     <p class="detail-text">{!! nl2br(e($destination->description)) !!}</p>
                 @else
                     <p class="muted">No description yet.</p>
+                @endif
+
+                {{-- What the place is good for --}}
+                @if ($destination->interests->isNotEmpty())
+                    <h3 class="detail-subhead">Good for</h3>
+                    <ul class="interest-list" role="list">
+                        @foreach ($destination->interests as $interest)
+                            <li class="interest-pill">{{ $interest->name }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+
+                @if ($price || $destination->price_note)
+                    <h3 class="detail-subhead">Prices</h3>
+                    <p class="price-line">
+                        @if ($price)
+                            <strong>{{ $price['symbol'] === $price['label'] ? $price['label'] : $price['symbol'] . ' · ' . $price['label'] }}</strong>
+                        @endif
+                        @if ($price && $destination->price_note)
+                            <span aria-hidden="true">·</span>
+                        @endif
+                        @if ($destination->price_note)
+                            {{ $destination->price_note }}
+                        @endif
+                    </p>
                 @endif
             </section>
 
@@ -115,7 +157,79 @@
             </section>
         </div>
 
-        <aside class="detail-aside" aria-labelledby="location-heading">
+        <aside class="detail-aside" aria-label="Visit information">
+            {{-- OPENING HOURS: Monday first, today highlighted --}}
+            <section class="card info-card" aria-labelledby="hours-heading">
+                <h2 id="hours-heading">
+                    <x-icon name="clock" size="20" />
+                    Opening hours
+                </h2>
+
+                @if ($hoursByDay->isEmpty())
+                    <p class="muted">Hours not listed yet. Contact the place before visiting.</p>
+                @else
+                    <p @class(['open-status', 'is-open' => $openNow, 'is-closed' => ! $openNow])>
+                        {{ $openNow ? 'Open now' : 'Closed now' }}
+                    </p>
+                    <dl class="hours-table">
+                        @foreach (\App\Models\DestinationHour::WEEK_ORDER as $day)
+                            <div @class(['hours-line', 'is-today' => $day === $today])>
+                                <dt>
+                                    {{ \App\Models\DestinationHour::DAYS[$day] }}
+                                    @if ($day === $today)
+                                        <span class="sr-only">(today)</span>
+                                    @endif
+                                </dt>
+                                <dd>{{ $hoursByDay->get($day)?->label() ?? 'Closed' }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                @endif
+            </section>
+
+            {{-- CONTACT: tap to call, email, or open the website / Facebook page --}}
+            @if ($hasContact)
+                <section class="card info-card" aria-labelledby="contact-heading">
+                    <h2 id="contact-heading">
+                        <x-icon name="phone" size="20" />
+                        Contact
+                    </h2>
+                    <ul class="contact-list" role="list">
+                        @if ($destination->phone)
+                            <li>
+                                {{-- tel: links need the number without spaces --}}
+                                <a href="tel:{{ preg_replace('/[^0-9+]/', '', explode('/', $destination->phone)[0]) }}">
+                                    <x-icon name="phone" size="18" /> {{ $destination->phone }}
+                                </a>
+                            </li>
+                        @endif
+                        @if ($destination->email)
+                            <li>
+                                <a href="mailto:{{ $destination->email }}">
+                                    <x-icon name="mail" size="18" /> {{ $destination->email }}
+                                </a>
+                            </li>
+                        @endif
+                        @if ($destination->website)
+                            <li>
+                                <a href="{{ $destination->website }}" target="_blank" rel="noopener nofollow">
+                                    <x-icon name="globe" size="18" /> Website
+                                    <span class="sr-only">(opens in a new tab)</span>
+                                </a>
+                            </li>
+                        @endif
+                        @if ($destination->facebook)
+                            <li>
+                                <a href="{{ $destination->facebook }}" target="_blank" rel="noopener nofollow">
+                                    <x-icon name="facebook" size="18" /> Facebook page
+                                    <span class="sr-only">(opens in a new tab)</span>
+                                </a>
+                            </li>
+                        @endif
+                    </ul>
+                </section>
+            @endif
+
             {{-- Today's weather in Calauan. Hides itself if the weather service is down. --}}
             <x-weather-card />
 
