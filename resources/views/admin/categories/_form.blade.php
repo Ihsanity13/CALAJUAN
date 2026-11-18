@@ -1,20 +1,18 @@
 {{-- SHARED FORM FIELDS, included by both create.blade.php and edit.blade.php.
      old('name', $category->name ?? '') means: if the form just failed validation,
      show what the user typed; otherwise show the saved value (edit),
-     or an empty box (create, where $category doesn't exist). --}}
+     or an empty box (create, where $category doesn't exist).
+     <x-input> draws the label, the box, and the error message under it. --}}
 @csrf
 
-<label for="name">Name</label>
-<input type="text" id="name" name="name" value="{{ old('name', $category->name ?? '') }}" required autofocus>
-@error('name')
-    <div class="error">{{ $message }}</div>
-@enderror
+<x-input name="name" label="Name" :value="old('name', $category->name ?? '')" required autofocus />
 
-<label for="icon">Icon (optional)</label>
-<input type="text" id="icon" name="icon" value="{{ old('icon', $category->icon ?? '') }}">
-@error('icon')
-    <div class="error">{{ $message }}</div>
-@enderror
+<x-input name="icon" label="Icon" optional :value="old('icon', $category->icon ?? '')" />
 
-<button type="submit" class="btn">Save</button>
-<a href="{{ route('admin.categories.index') }}">Cancel</a>
+<div class="form-actions">
+    <button type="submit" class="btn">
+        <x-icon name="check" size="18" />
+        Save category
+    </button>
+    <a class="btn btn-ghost" href="{{ route('admin.categories.index') }}">Cancel</a>
+</div>

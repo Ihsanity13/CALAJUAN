@@ -348,6 +348,7 @@ main:focus {
 }
 
 .site-main.narrow,
+.site-main.form-wide,
 .site-main.wide {
     margin: var(--space-5) auto var(--space-7);
     padding: var(--space-5);
@@ -359,6 +360,11 @@ main:focus {
 
 .site-main.narrow {
     max-width: min(480px, calc(100% - 2 * var(--space-4)));
+}
+
+/* longer forms (destination) get a bit more room */
+.site-main.form-wide {
+    max-width: min(720px, calc(100% - 2 * var(--space-4)));
 }
 
 .site-main.wide {
@@ -499,6 +505,7 @@ main:focus {
     }
 
     .site-main.narrow,
+    .site-main.form-wide,
     .site-main.wide {
         margin-top: var(--space-7);
         padding: var(--space-6);
@@ -1015,13 +1022,24 @@ input[type=checkbox] {
     }
 }
 
-/* Older forms (label, input, label, input...) without .field wrappers */
-form > label {
-    margin-top: var(--space-4);
+/* A group of checkboxes under one heading (fieldset + legend) */
+.check-group {
+    margin-inline: 0;
+    padding: 0;
+    border: 0;
 }
 
-form > .btn {
-    margin-top: var(--space-5);
+.check-group legend {
+    padding: 0;
+}
+
+.check-group .check {
+    align-items: flex-start;
+    padding-block: var(--space-2);
+}
+
+.check-group input[type=checkbox] {
+    margin-top: 3px;
 }
 
 /* Buttons at the end of a form */
