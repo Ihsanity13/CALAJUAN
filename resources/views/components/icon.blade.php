@@ -67,6 +67,22 @@
         @case('logout')
             <path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4" /><path d="m15 8 4 4-4 4M19 12H9" />
             @break
+        {{-- place details --}}
+        @case('clock')
+            <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+            @break
+        @case('phone')
+            <path d="M5 4h3.5l1.5 4-2 1.5a11 11 0 0 0 6.5 6.5L16 14l4 1.5V19a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1z" />
+            @break
+        @case('mail')
+            <rect x="3.5" y="5.5" width="17" height="13" rx="2" /><path d="m4 7 8 6 8-6" />
+            @break
+        @case('globe')
+            <circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+            @break
+        @case('facebook')
+            <rect x="3.5" y="3.5" width="17" height="17" rx="4" /><path d="M15 8h-1.5A2.5 2.5 0 0 0 11 10.5V20M9 13h5" />
+            @break
         {{-- weather icons --}}
         @case('sun')
             <circle cx="12" cy="12" r="4" />

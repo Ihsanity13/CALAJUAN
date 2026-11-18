@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\DestinationRequest;
 use App\Models\Category;
 use App\Models\Destination;
+use App\Models\Interest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -24,21 +25,26 @@ class DestinationController extends Controller
     }
 
     // CREATE (step 1): show the empty form.
-    // The form needs the list of categories for its dropdown.
+    // The form needs the categories (dropdown) and interests (checkboxes).
     public function create()
     {
-        $categories = Category::orderBy('name')->get();
-
-        return view('admin.destinations.create', compact('categories'));
+        return view('admin.destinations.create', $this->formOptions());
     }
 
     // CREATE (step 2): validate and save
     public function store(DestinationRequest $request)
     {
-        // safe()->except('photos') = the validated fields, minus the photo files
-        // (those aren't a column; they're saved separately below).
+        // destinationData() = the validated columns of the destinations table
+        // (photos, interests and hours aren't columns; they're saved separately).
         // create() fills them through $fillable (mass assignment).
-        $destination = Destination::create($request->safe()->except('photos'));
+        // The transaction keeps the place, its interests and its hours together:
+        // if one part fails, none of them is saved.
+        $destination = DB::transaction(function () use ($request) {
+            $destination = Destination::create($request->destinationData());
+            $this->saveDetails($destination, $request);
+
+            return $destination;
+        });
 
         $count = $this->storePhotos($destination, $request->file('photos', []));
 
@@ -49,15 +55,18 @@ class DestinationController extends Controller
     // UPDATE (step 1): show the form with the current values
     public function edit(Destination $destination)
     {
-        $categories = Category::orderBy('name')->get();
+        $destination->load(['interests', 'hours']);
 
-        return view('admin.destinations.edit', compact('destination', 'categories'));
+        return view('admin.destinations.edit', ['destination' => $destination] + $this->formOptions());
     }
 
     // UPDATE (step 2): validate and save the changes
     public function update(DestinationRequest $request, Destination $destination)
     {
-        $destination->update($request->safe()->except('photos'));
+        DB::transaction(function () use ($request, $destination) {
+            $destination->update($request->destinationData());
+            $this->saveDetails($destination, $request);
+        });
 
         $count = $this->storePhotos($destination, $request->file('photos', []));
 
@@ -75,6 +84,23 @@ class DestinationController extends Controller
 
         return redirect()->route('admin.destinations.index')
             ->with('success', 'Destination deleted.');
+    }
+
+    // The lists the form's dropdown and checkboxes need
+    private function formOptions(): array
+    {
+        return [
+            'categories' => Category::orderBy('name')->get(),
+            'interests' => Interest::orderBy('name')->get(),
+        ];
+    }
+
+    // Interests and opening hours live in their own tables
+    private function saveDetails(Destination $destination, DestinationRequest $request): void
+    {
+        // sync(): keep exactly these interests (adds the ticked ones, removes the unticked ones)
+        $destination->interests()->sync($request->interestIds());
+        $destination->syncHours($request->openingHours());
     }
 
     // Save uploaded photos to storage/app/public/destinations/{id}/ and add

@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DestinationController;
 use App\Http\Controllers\Admin\DestinationImageController;
+use App\Http\Controllers\Admin\InterestController;
 use App\Http\Controllers\AuthController;
 // "as PublicDestinationController": the admin one above is also called
 // DestinationController, and one file can't import two classes with the same name.
@@ -48,7 +50,7 @@ Route::middleware(['auth', 'role:admin'])
     ->name('admin.')
     ->group(function () {
         // Final name: admin.dashboard, URL: /admin
-        Route::view('/', 'admin.dashboard')->name('dashboard');
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
         // resource() creates all the CRUD routes at once:
         // index, create, store, edit, update, destroy.
@@ -56,6 +58,10 @@ Route::middleware(['auth', 'role:admin'])
             ->except('show');
 
         Route::resource('destinations', DestinationController::class)
+            ->except('show');
+
+        // Interests (Nature, Food, Adventure...) that places can be tagged with
+        Route::resource('interests', InterestController::class)
             ->except('show');
 
         // PHOTOS of a destination (the upload itself happens in the destination form).

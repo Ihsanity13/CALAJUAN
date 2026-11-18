@@ -18,6 +18,8 @@ class DestinationController extends Controller
         $destination->load([
             'category',
             'images',
+            'interests',
+            'hours',
             // newest reviews first, each with its author's name
             'reviews' => fn ($query) => $query->latest()->with('user:id,name'),
         ]);

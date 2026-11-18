@@ -10,8 +10,9 @@ class CategorySeeder extends Seeder
     // run() is the method Laravel calls when this seeder executes
     public function run(): void
     {
-        // Starter categories. Replace these with the ones your teammates decide on.
-        $categories = ['Nature', 'Food', 'Historical', 'Religious', 'Recreation'];
+        // Categories say what a place IS. What it's good for (Nature, Food...)
+        // is an interest instead (see InterestSeeder).
+        $categories = ['Tourist Spot', 'Restaurant', 'Café', 'Resort', 'Accommodation', 'Landmark', 'Religious', 'Recreation'];
 
         foreach ($categories as $name) {
             // firstOrCreate: look for a category with this name, and only
