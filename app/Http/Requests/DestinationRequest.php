@@ -40,4 +40,16 @@ class DestinationRequest extends FormRequest
             'is_verified' => ['boolean'],
         ];
     }
+
+    // Friendlier error messages. The coordinates now come from the map pin,
+    // so "The latitude field is required" would confuse the admin.
+    public function messages(): array
+    {
+        return [
+            'latitude.required' => 'Drop a pin on the map to set the location.',
+            'longitude.required' => 'Drop a pin on the map to set the location.',
+            'latitude.*' => 'The pin\'s latitude is not valid. Move the pin and try again.',
+            'longitude.*' => 'The pin\'s longitude is not valid. Move the pin and try again.',
+        ];
+    }
 }
