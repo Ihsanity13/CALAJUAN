@@ -80,23 +80,25 @@
 </section>
 
 <section class="container section" id="featured">
-    <h2>Featured places</h2>
-    <p class="muted">Verified places picked by our team.</p>
-
-    <div class="places">
-        {{-- @forelse loops through the list, and runs @empty if there's nothing --}}
-        @forelse ($featured as $destination)
-        <article class="place">
-            <div>
-                <h3>{{ $destination->name }}</h3>
-                <p class="muted">{{ $destination->address ?? 'Calauan, Laguna' }}</p>
-                <p>{{ \Illuminate\Support\Str::limit($destination->description ?? '', 110) }}</p>
-            </div>
-            <span class="tag">{{ $destination->category->name }}</span>
-        </article>
-        @empty
-        <div class="empty">No featured places yet. Check back soon.</div>
-        @endforelse
+    <div class="section-head">
+        <h2>Featured places</h2>
+        <p class="muted">Verified places picked by our team.</p>
     </div>
+
+    {{-- @if / @else instead of @forelse, because the grid wrapper
+         should only appear when there are cards to put in it --}}
+    @if ($featured->isNotEmpty())
+        <div class="dest-grid">
+            @foreach ($featured as $destination)
+                <x-destination-card :destination="$destination" />
+            @endforeach
+        </div>
+    @else
+        <div class="empty-state">
+            <span class="brand-mark brand-mark-lg" aria-hidden="true"></span>
+            <h3>No featured places yet</h3>
+            <p>Our team is still checking places around Calauan. Check back soon.</p>
+        </div>
+    @endif
 </section>
 @endsection
