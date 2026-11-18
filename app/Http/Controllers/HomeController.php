@@ -16,7 +16,8 @@ class HomeController extends Controller
         // instead of one query per row (the N+1 problem).
         // withAvg / withCount add reviews_avg_rating and reviews_count to each
         // destination in the same query, so the cards can show the star rating.
-        $featured = Destination::with('category')
+        // primaryImage = the cover photo for each card, loaded in one extra query.
+        $featured = Destination::with(['category', 'primaryImage'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
             ->featured()

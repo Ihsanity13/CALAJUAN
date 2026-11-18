@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Storage;
 
 class Destination extends Model
 {
@@ -51,9 +53,27 @@ class Destination extends Model
     }
 
     // RELATIONSHIP: one destination has many photos.
+    // Sorted with the primary photo first, then in upload order.
     public function images(): HasMany
     {
-        return $this->hasMany(DestinationImage::class);
+        return $this->hasMany(DestinationImage::class)
+            ->orderByDesc('is_primary')
+            ->orderBy('id');
+    }
+
+    // RELATIONSHIP: the one primary photo (the cover shown on cards), or null.
+    public function primaryImage(): HasOne
+    {
+        return $this->hasOne(DestinationImage::class)->where('is_primary', true);
+    }
+
+    // When a destination is deleted, the database removes its photo rows
+    // (cascadeOnDelete), but not the files. This deletes its whole photo folder.
+    protected static function booted(): void
+    {
+        static::deleted(function (Destination $destination) {
+            Storage::disk('public')->deleteDirectory('destinations/' . $destination->id);
+        });
     }
 
     // RELATIONSHIP: one destination has many reviews.

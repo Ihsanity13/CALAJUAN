@@ -1,6 +1,7 @@
 {{-- DESTINATION CARD: used on the home page now, and later on Explore and Saved.
      Usage: <x-destination-card :destination="$destination" />
-     Expects the destination loaded with: category, withAvg('reviews', 'rating'), withCount('reviews'). --}}
+     Expects the destination loaded with: category, primaryImage,
+     withAvg('reviews', 'rating'), withCount('reviews'). --}}
 @props(['destination'])
 
 @php
@@ -11,10 +12,17 @@
 
 <article {{ $attributes->merge(['class' => 'card card-lift dest-card']) }}>
     <div class="dest-media">
-        {{-- Photos come with the upload feature (Day 3). Until then, every card
-             shows the gold lattice placeholder. It's decoration, so it's hidden
-             from screen readers; the place's name is in the heading below. --}}
-        <div class="img-placeholder" aria-hidden="true"></div>
+        {{-- The primary photo, or the gold lattice placeholder when there's none.
+             loading="lazy": the browser only downloads the photo when the card
+             gets near the screen. width/height stop the page jumping while it loads.
+             The placeholder is decoration, so screen readers skip it. --}}
+        @if ($destination->primaryImage)
+            <img src="{{ $destination->primaryImage->url }}"
+                 alt="Photo of {{ $destination->name }}"
+                 loading="lazy" decoding="async" width="800" height="600">
+        @else
+            <div class="img-placeholder" aria-hidden="true"></div>
+        @endif
 
         <span class="tag">{{ $destination->category->name }}</span>
     </div>
