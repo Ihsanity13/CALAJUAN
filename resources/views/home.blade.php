@@ -5,9 +5,9 @@
 @section('main_class', 'full')
 
 @section('content')
-<section class="hero">
-    <div class="hero-inner">
-        <div>
+<section class="hero on-dark">
+    <div class="container hero-inner">
+        <div class="hero-copy">
             <h1>Find where to go in Calauan.</h1>
             <p>Browse places around town, save the ones you like, and get suggestions based on what you enjoy.</p>
 
@@ -29,32 +29,47 @@
                  The "skin" pattern draws the diamond lattice. --}}
         <svg class="hero-art" viewBox="0 0 220 320" role="img" aria-label="Illustration of a pineapple">
             <defs>
+                {{-- The two gradients match --grad-crown and --grad-fruit (160deg).
+                     Their colors come from the CSS tokens (see .hero-art in app.css). --}}
+                <linearGradient id="crown" gradientUnits="userSpaceOnUse" x1="90" y1="4" x2="130" y2="114">
+                    <stop offset="0%" class="crown-1" />
+                    <stop offset="45%" class="crown-2" />
+                    <stop offset="100%" class="crown-3" />
+                </linearGradient>
+                <linearGradient id="fruit" gradientUnits="userSpaceOnUse" x1="76" y1="111" x2="144" y2="299">
+                    <stop offset="0%" class="fruit-1" />
+                    <stop offset="35%" class="fruit-2" />
+                    <stop offset="70%" class="fruit-3" />
+                    <stop offset="100%" class="fruit-4" />
+                </linearGradient>
+
                 <pattern id="skin" width="36" height="36" patternUnits="userSpaceOnUse">
                     {{-- Two diagonal lines per tile make the diamonds;
                              the dots are the pineapple's "eyes" --}}
-                    <path d="M0 0L36 36M36 0L0 36" stroke="#8a5a12" stroke-width="2.5" fill="none" />
-                    <circle cx="18" cy="0" r="2.4" fill="#8a5a12" />
-                    <circle cx="18" cy="36" r="2.4" fill="#8a5a12" />
-                    <circle cx="0" cy="18" r="2.4" fill="#8a5a12" />
-                    <circle cx="36" cy="18" r="2.4" fill="#8a5a12" />
+                    <path class="lattice-line" d="M0 0L36 36M36 0L0 36" stroke-width="2.5" fill="none" />
+                    <circle class="lattice-eye" cx="18" cy="0" r="2.4" />
+                    <circle class="lattice-eye" cx="18" cy="36" r="2.4" />
+                    <circle class="lattice-eye" cx="0" cy="18" r="2.4" />
+                    <circle class="lattice-eye" cx="36" cy="18" r="2.4" />
                 </pattern>
             </defs>
 
-            {{-- Leaves, back to front: outer, middle, center --}}
-            <path d="M100 114 C62 96 34 70 20 40 C52 48 90 76 100 114Z" fill="#4fb391" />
-            <path d="M120 114 C158 96 186 70 200 40 C168 48 130 76 120 114Z" fill="#4fb391" />
-            <path d="M104 112 C78 84 66 52 66 18 C90 40 104 74 104 112Z" fill="#6ccba8" />
-            <path d="M116 112 C142 84 154 52 154 18 C130 40 116 74 116 112Z" fill="#6ccba8" />
-            <path d="M110 114 C94 76 98 38 110 4 C122 38 126 76 110 114Z" fill="#9be3c6" />
+            {{-- Leaves, back to front: outer, middle, center. One crown gradient
+                 runs across all of them: light tips, dark base. --}}
+            <path d="M100 114 C62 96 34 70 20 40 C52 48 90 76 100 114Z" fill="url(#crown)" />
+            <path d="M120 114 C158 96 186 70 200 40 C168 48 130 76 120 114Z" fill="url(#crown)" />
+            <path d="M104 112 C78 84 66 52 66 18 C90 40 104 74 104 112Z" fill="url(#crown)" />
+            <path d="M116 112 C142 84 154 52 154 18 C130 40 116 74 116 112Z" fill="url(#crown)" />
+            <path d="M110 114 C94 76 98 38 110 4 C122 38 126 76 110 114Z" fill="url(#crown)" />
 
-            {{-- The fruit: a gold oval, then the lattice drawn over it --}}
-            <ellipse cx="110" cy="205" rx="78" ry="100" fill="#f2b61f" />
+            {{-- The fruit: the ripening gradient, then the lattice drawn over it --}}
+            <ellipse cx="110" cy="205" rx="78" ry="100" fill="url(#fruit)" />
             <ellipse cx="110" cy="205" rx="78" ry="100" fill="url(#skin)" />
         </svg>
     </div>
 </section>
 
-<section class="section" id="featured">
+<section class="container section" id="featured">
     <h2>Featured places</h2>
     <p class="muted">Verified places picked by our team.</p>
 

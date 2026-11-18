@@ -3,18 +3,6 @@
 @section('title', 'Log in')
 
 @section('content')
-    <style>
-        .btn {
-            background: #ffd83d;
-            color: #14260a;
-            border: 3px solid #ffd83d;
-        }
-        .btn:hover {
-            background: #ffe27a;
-            border-color: #ffe27a;
-        }
-    </style>
-
     <h1>Log in</h1>
     ...
 
@@ -42,7 +30,7 @@
             <input type="checkbox" name="remember"> Remember me
         </label>
 
-        <button type="submit" class="btn">Log in</button>
+        <button type="submit" class="btn btn-gold">Log in</button>
     </form>
 
     <p>No account yet? <a href="{{ route('register') }}">Register</a></p>

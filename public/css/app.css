@@ -1,186 +1,549 @@
-/* ===== CALAJUAN styles =====
-   Idea: the pineapple's diamond-lattice skin. Leaf green and pineapple gold
-   on a cool, light background. */
+/* =====================================================================
+   CALAJUAN styles
+   Idea: a real pineapple. Deep leaf greens, a fruit that ripens from
+   pale yellow to orange, and the diamond-lattice skin, on a flat
+   off-white page so those colors pop.
 
-/* ---- Design tokens: change a color here and it changes everywhere ---- */
+   Sections:
+     1. Tokens        5. Buttons          9. Alerts & empty states
+     2. Base          6. Cards            10. Tables
+     3. Layout        7. Tags & chips     11. Pages (home, auth, admin)
+     4. Tab bar       8. Forms            12. Motion
+   ===================================================================== */
+
+
+/* =====================================================================
+   1. TOKENS: change a value here and it changes everywhere
+   ===================================================================== */
 :root {
-    --leaf: #0e4d4a;
-    /* deep blue-green, like pineapple leaves */
-    --leaf-deep: #093836;
-    /* darker leaf, for hover states */
-    --pineapple: #f2b61f;
-    /* the fruit's gold */
-    --skin: #8a5a12;
-    /* the brown lattice lines on the skin */
-    --frost: #f2f7f3;
-    /* page background */
-    --surface: #ffffff;
-    /* panels and form fields */
-    --ink: #12292a;
-    /* main text */
-    --muted: #55706a;
-    /* secondary text */
-    --line: #d3e0d7;
-    /* thin dividers */
-    --gold-soft: #fcefc0;
-    /* soft gold for tags */
-    --alert: #b3261e;
-    /* errors and destructive actions */
+    /* ---- Leaves (the crown) ---- */
+    --leaf-900: #2c4a2a;   /* header, footer, dark backgrounds (white text 9.9:1) */
+    --leaf-700: #3f633b;   /* primary buttons, headings, links (white text 6.9:1) */
+    --leaf-500: #6c8c40;   /* borders, underlines, icons. Too light for text (3.8:1 with white) */
+    --leaf-300: #97b530;   /* accents, active chips. Never with white text */
+    --leaf-050: #eef2df;   /* pale leaf tint: success alerts, verified badge */
 
+    /* ---- Fruit (pale top to ripe bottom) ---- */
+    --fruit-100: #f1e09a;  /* soft tag backgrounds, highlights */
+    --fruit-300: #e9cb68;  /* focus ring on dark backgrounds */
+    --fruit-500: #ea9e30;  /* the logo */
+    --fruit-700: #e8841a;  /* deep orange accents */
+
+    /* ---- Skin ---- */
+    --skin: #ac671e;       /* lattice lines, star icons (4.4:1 on white) */
+    --skin-text: #7a4510;  /* tag text on fruit-100 (5.9:1). --skin itself is only 3.4:1 there */
+
+    /* ---- Neutrals: flat surfaces ---- */
+    --page: #fbf8ef;       /* page background (off-white) */
+    --surface: #ffffff;    /* cards, panels, form fields */
+    --surface-alt: #f7f3e6;/* zebra rows, quiet panels */
+    --ink: #1f2a1c;        /* main text (14:1 on --page) */
+    --muted: #56664a;      /* secondary text (5.8:1 on --page) */
+    --on-dark: #e4ecd6;    /* secondary text on leaf backgrounds (5.6:1 or better) */
+    --line: #e6dfc8;       /* dividers, card borders */
+    --line-strong: #c9c0a3;/* form field borders (3:1 against white) */
+
+    /* ---- Danger (delete, errors) ---- */
+    --danger: #b3261e;     /* 6.5:1 with white, 6.2:1 on --page */
+    --danger-dark: #8f1d17;
+    --danger-050: #fbeaea;
+
+    /* ---- Gradients: ONLY for the hero, the pineapple, gold buttons, image placeholders ---- */
+    --grad-crown: linear-gradient(160deg, #97b530 0%, #6c8c40 45%, #3f633b 100%);
+    --grad-fruit: linear-gradient(160deg, #f1e09a 0%, #e9cb68 35%, #ea9e30 70%, #e8841a 100%);
+    --grad-hero: linear-gradient(170deg, #3f633b 0%, #2c4a2a 100%);
+
+    /* ---- Spacing scale (4 / 8 / 12 / 16 / 24 / 32 / 48 / 64) ---- */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
+    --gutter: clamp(16px, 4vw, 40px);  /* side padding of the page */
+    --content-max: 1200px;
+
+    /* ---- Corner radius ---- */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-pill: 999px;
+
+    /* ---- Shadows: soft, tinted green so they don't look grey ---- */
+    --shadow-1: 0 1px 2px rgba(31, 42, 28, 0.06), 0 1px 3px rgba(31, 42, 28, 0.05);
+    --shadow-2: 0 4px 10px rgba(31, 42, 28, 0.07), 0 12px 28px rgba(31, 42, 28, 0.09);
+    --shadow-3: 0 -2px 12px rgba(31, 42, 28, 0.10);
+
+    /* ---- Type: fluid sizes that grow a little with the screen ---- */
     --font-display: "Young Serif", Georgia, "Times New Roman", serif;
     --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --text-xs: 0.75rem;
+    --text-sm: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+    --text-base: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+    --text-lg: clamp(1.125rem, 1.07rem + 0.25vw, 1.25rem);
+    --text-xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+    --text-2xl: clamp(1.5rem, 1.3rem + 1vw, 2rem);
+    --text-3xl: clamp(1.875rem, 1.5rem + 1.8vw, 2.75rem);
+    --text-hero: clamp(2.375rem, 1.6rem + 4vw, 4.5rem);
+
+    /* ---- Motion ---- */
+    --fast: 150ms;
+    --slow: 200ms;
+    --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+    /* ---- Sizes ---- */
+    --touch: 44px;         /* minimum touch target */
+    --tab-bar-h: 64px;
 }
 
-/* ---- Base ---- */
+
+/* =====================================================================
+   2. BASE
+   ===================================================================== */
 *,
 *::before,
 *::after {
     box-sizing: border-box;
 }
 
-body {
-    margin: 0;
-    font-family: var(--font-body);
-    font-size: 1rem;
-    line-height: 1.6;
-    color: var(--ink);
-    background: var(--frost);
+html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
 }
 
-/* Type scale: each heading step is about 1.25x the one below it.
-   Young Serif only has one weight, so headings stay at 400
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    color: var(--ink);
+    background: var(--page);
+    /* room for the bottom tab bar on phones (removed on desktop) */
+    padding-bottom: calc(var(--tab-bar-h) + env(safe-area-inset-bottom));
+}
+
+/* Young Serif only has one weight, so headings stay at 400
    (a bolder weight would make the browser fake it, and it looks smudgy). */
 h1,
 h2,
 h3 {
     font-family: var(--font-display);
     font-weight: 400;
-    color: var(--leaf);
-    line-height: 1.2;
-    margin: 0 0 0.5rem;
+    color: var(--leaf-700);
+    line-height: 1.15;
+    margin: 0 0 var(--space-2);
+    text-wrap: balance;
 }
 
-h1 {
-    font-size: 1.95rem;
-}
-
-h2 {
-    font-size: 1.56rem;
-}
-
-h3 {
-    font-size: 1.25rem;
-}
+h1 { font-size: var(--text-3xl); }
+h2 { font-size: var(--text-2xl); }
+h3 { font-size: var(--text-xl); }
 
 p {
-    margin: 0 0 1rem;
+    margin: 0 0 var(--space-4);
 }
 
 a {
-    color: var(--leaf);
+    color: var(--leaf-700);
+    text-decoration-color: var(--leaf-500);
+    text-underline-offset: 3px;
+    transition: color var(--fast) var(--ease);
 }
 
 a:hover {
-    color: var(--leaf-deep);
+    color: var(--leaf-900);
+    text-decoration-thickness: 2px;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+.icon {
+    flex-shrink: 0;
 }
 
 .muted {
     color: var(--muted);
 }
 
-/* Visible keyboard focus: helps anyone navigating with the Tab key */
+/* Hidden on screen, still read by screen readers */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Visible keyboard focus: dark green on light areas,
+   pale gold on the dark header, hero and footer. */
 :focus-visible {
-    outline: 3px solid var(--pineapple);
-    outline-offset: 3px;
+    outline: 3px solid var(--leaf-700);
+    outline-offset: 2px;
+}
+
+.on-dark :focus-visible {
+    outline-color: var(--fruit-300);
+}
+
+/* The main area gets focus from the skip link; it doesn't need a ring */
+main:focus {
+    outline: none;
+}
+
+.skip-link {
+    position: absolute;
+    left: var(--space-4);
+    top: -100px;
+    z-index: 100;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--leaf-900);
+    font-weight: 600;
+    box-shadow: var(--shadow-2);
+}
+
+.skip-link:focus {
+    top: var(--space-3);
+}
+
+
+/* =====================================================================
+   3. LAYOUT: container, header, main, footer
+   ===================================================================== */
+.container {
+    width: 100%;
+    max-width: calc(var(--content-max) + 2 * var(--gutter));
+    margin-inline: auto;
+    padding-inline: var(--gutter);
 }
 
 /* ---- Header ---- */
 .site-header {
+    background: var(--leaf-900);
+    color: #fff;
+}
+
+.header-inner {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
-    padding: 14px clamp(16px, 4vw, 40px);
-    background: var(--leaf);
-    color: #fff;
+    gap: var(--space-4);
+    min-height: 64px;
 }
 
 .brand {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-3);
+    min-height: var(--touch);
     color: #fff;
     text-decoration: none;
     font-family: var(--font-display);
-    font-size: 1.5rem;
+    font-size: var(--text-xl);
 }
 
 .brand:hover {
-    color: var(--pineapple);
+    color: var(--fruit-100);
 }
 
-/* The small logo: a gold square with grid lines, rotated 45 degrees,
+.brand-sm {
+    font-size: var(--text-lg);
+}
+
+/* The logo: a gold square with grid lines, rotated 45 degrees,
    which turns the grid into a diamond lattice like a pineapple's skin. */
 .brand-mark {
     width: 22px;
     height: 22px;
-    border-radius: 3px;
+    flex-shrink: 0;
+    border-radius: 4px;
     transform: rotate(45deg);
-    background-color: var(--pineapple);
+    background-color: var(--fruit-500);
     background-image:
         linear-gradient(90deg, var(--skin) 2px, transparent 2px),
         linear-gradient(0deg, var(--skin) 2px, transparent 2px);
     background-size: 11px 11px;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
 }
 
-.nav {
-    display: flex;
+.brand-mark-lg {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background-size: 15px 15px;
+    box-shadow: none;
+}
+
+/* Desktop nav: hidden on phones (the tab bar replaces it) */
+.top-nav {
+    display: none;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.nav form {
-    margin: 0;
+    gap: var(--space-1);
 }
 
 .nav-link {
-    padding: 8px 12px;
-    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch);
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-sm);
     color: #fff;
+    font-weight: 500;
     text-decoration: none;
+    transition: background-color var(--fast) var(--ease);
 }
 
 .nav-link:hover {
-    background: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.10);
     color: #fff;
+}
+
+/* the current page: a gold bar under the link */
+.nav-link[aria-current="page"] {
+    box-shadow: inset 0 -3px 0 var(--fruit-300);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-left: auto;
+}
+
+.header-actions form {
+    margin: 0;
+}
+
+/* The user's name and the separate "Log in" link only show on desktop;
+   on phones the Profile tab does that job. */
+.nav-user,
+.nav-login {
+    display: none;
 }
 
 .nav-user {
-    padding: 0 6px;
-    font-size: 0.9rem;
-    color: #cfe5dd;
+    padding: 0 var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--on-dark);
 }
 
-/* ---- Buttons ---- */
+/* ---- Main area ----
+   narrow = centered card (forms), wide = wider card (tables), full = no card */
+.site-main {
+    flex: 1;
+    width: 100%;
+}
+
+.site-main.narrow,
+.site-main.wide {
+    margin: var(--space-5) auto var(--space-7);
+    padding: var(--space-5);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-1);
+}
+
+.site-main.narrow {
+    max-width: min(480px, calc(100% - 2 * var(--space-4)));
+}
+
+.site-main.wide {
+    max-width: min(var(--content-max), calc(100% - 2 * var(--space-4)));
+}
+
+/* "full" pages wrap the flash message in the page width */
+.site-main.full .flash {
+    max-width: calc(var(--content-max) + 2 * var(--gutter));
+    margin: var(--space-5) auto 0;
+    padding-inline: var(--gutter);
+}
+
+.flash {
+    margin-bottom: var(--space-4);
+}
+
+/* A page's title row: heading on the left, actions on the right */
+.page-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-5);
+}
+
+.page-head h1 {
+    margin: 0;
+}
+
+.page-head p {
+    margin: var(--space-1) 0 0;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: var(--touch);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* ---- Footer ---- */
+.site-footer {
+    background: var(--leaf-900);
+    color: var(--on-dark);
+    font-size: var(--text-sm);
+}
+
+.footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-5);
+    padding-block: var(--space-6);
+}
+
+.footer-inner p {
+    margin: 0;
+}
+
+
+/* =====================================================================
+   4. TAB BAR (phones only)
+   ===================================================================== */
+.tab-bar {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 50;
+    display: flex;
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    box-shadow: var(--shadow-3);
+}
+
+.tab {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: var(--tab-bar-h);
+    color: var(--muted);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color var(--fast) var(--ease);
+}
+
+.tab:hover {
+    color: var(--leaf-900);
+}
+
+.tab[aria-current="page"] {
+    color: var(--leaf-700);
+}
+
+/* a short leaf-green bar above the active tab */
+.tab[aria-current="page"]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 32px;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--leaf-300);
+}
+
+.tab:focus-visible {
+    outline-offset: -4px;
+}
+
+/* ---- Desktop: top nav on, tab bar off ---- */
+@media (min-width: 768px) {
+    body {
+        padding-bottom: 0;
+    }
+
+    .tab-bar {
+        display: none;
+    }
+
+    .top-nav {
+        display: flex;
+        margin-left: var(--space-5);
+    }
+
+    .nav-user,
+    .nav-login {
+        display: inline-flex;
+    }
+
+    .site-main.narrow,
+    .site-main.wide {
+        margin-top: var(--space-7);
+        padding: var(--space-6);
+    }
+}
+
+
+/* =====================================================================
+   5. BUTTONS
+   .btn             primary (leaf green)
+   .btn-gold        fruit gradient, dark text
+   .btn-outline     bordered; turns white inside .on-dark
+   .btn-ghost       text only, tinted on hover
+   .btn-danger      red, for deleting
+   .btn-sm          compact (still 44px tall)
+   .btn-icon        square, icon only (needs an aria-label)
+   ===================================================================== */
 .btn {
-    display: inline-block;
-    margin-top: 18px;
-    padding: 11px 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: var(--touch);
+    padding: 0 var(--space-5);
     border: 0;
-    border-radius: 999px;
-    background: var(--leaf);
+    border-radius: var(--radius-pill);
+    background-color: var(--leaf-700);
     color: #fff;
     font: inherit;
     font-weight: 600;
+    line-height: 1.2;
     text-decoration: none;
+    white-space: nowrap;
     cursor: pointer;
-    transition: background-color 0.12s ease;
+    transition:
+        background-color var(--fast) var(--ease),
+        background-position var(--slow) var(--ease),
+        box-shadow var(--fast) var(--ease),
+        color var(--fast) var(--ease),
+        transform var(--fast) var(--ease);
 }
 
+/* darker on hover: --leaf-500 would be too light for white text */
 .btn:hover {
-    background: var(--leaf-deep);
+    background-color: var(--leaf-900);
     color: #fff;
 }
 
@@ -188,234 +551,745 @@ a:hover {
     transform: translateY(1px);
 }
 
-/* a small press when clicked */
+.btn:disabled,
+.btn[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn-sm {
+    padding: 0 var(--space-4);
+    font-size: var(--text-sm);
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.btn-icon {
+    width: var(--touch);
+    padding: 0;
+}
+
+/* Gold: the fruit gradient stretched to twice the button's width, so
+   only its lighter part shows (dark text stays about 6:1). On hover it
+   slides a little toward the orange: no sudden color jump. */
+.btn-gold,
+.btn-gold:hover {
+    background-color: var(--fruit-300);
+    background-image: var(--grad-fruit);
+    background-size: 200% 100%;
+    color: var(--leaf-900);
+}
 
 .btn-gold {
-    background: var(--pineapple);
-    color: var(--leaf-deep);
+    background-position: 0% 0;
 }
 
 .btn-gold:hover {
-    background: #ffc93c;
-    color: var(--leaf-deep);
+    background-position: 30% 0;
+    box-shadow: var(--shadow-1);
 }
 
 .btn-outline {
     background: transparent;
-    color: #fff;
-    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.65);
+    color: var(--leaf-700);
+    box-shadow: inset 0 0 0 1.5px var(--leaf-500);
 }
 
 .btn-outline:hover {
-    background: rgba(255, 255, 255, 0.14);
+    background: var(--leaf-050);
+    color: var(--leaf-900);
+}
+
+.on-dark .btn-outline {
+    color: #fff;
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.6);
+}
+
+.on-dark .btn-outline:hover {
+    background: rgba(255, 255, 255, 0.10);
     color: #fff;
 }
 
-/* Buttons inside the header and hero don't need the extra top gap */
-.nav .btn,
-.hero-actions .btn {
-    margin-top: 0;
+.btn-ghost {
+    background: transparent;
+    color: var(--leaf-700);
 }
 
-.nav .btn {
-    padding: 8px 18px;
+.btn-ghost:hover {
+    background: var(--leaf-050);
+    color: var(--leaf-900);
 }
 
-/* ---- Page container ----
-   Default: a centered white panel (login, register, forms).
-   .wide = more room for tables. .full = no panel (the home page). */
-main {
-    max-width: 460px;
-    margin: 40px auto;
-    padding: 28px;
+.btn-danger {
+    background: var(--danger);
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: var(--danger-dark);
+    color: #fff;
+}
+
+/* Ghost button in red: quiet delete action in table rows */
+.btn-ghost.btn-danger {
+    background: transparent;
+    color: var(--danger);
+}
+
+.btn-ghost.btn-danger:hover {
+    background: var(--danger-050);
+    color: var(--danger-dark);
+}
+
+/* Older pages still use this: a red text-style button */
+.link-btn {
+    min-height: var(--touch);
+    padding: 0 var(--space-2);
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--danger);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+
+/* =====================================================================
+   6. CARDS
+   ===================================================================== */
+.card {
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-1);
 }
 
-main.wide {
-    max-width: 940px;
-    overflow-x: auto;
+.card-body {
+    padding: var(--space-5);
 }
 
-main.full {
-    max-width: none;
-    margin: 0;
-    padding: 0;
-    background: none;
-    border: 0;
-    border-radius: 0;
-}
-
-@media (max-width: 520px) {
-    main {
-        margin: 20px 12px;
-        padding: 20px;
-    }
-}
-
-/* ---- Forms ---- */
-label {
+/* Cards that are links lift a little on hover */
+a.card {
     display: block;
-    margin-top: 14px;
+    color: inherit;
+    text-decoration: none;
+    transition: transform var(--slow) var(--ease), box-shadow var(--slow) var(--ease), border-color var(--slow) var(--ease);
+}
+
+a.card:hover,
+.card-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-2);
+    border-color: var(--line-strong);
+}
+
+.card-lift {
+    transition: transform var(--slow) var(--ease), box-shadow var(--slow) var(--ease), border-color var(--slow) var(--ease);
+}
+
+/* ---- Image placeholder: fruit gradient with the lattice on top ---- */
+.img-placeholder {
+    background:
+        repeating-linear-gradient(45deg, var(--skin) 0 1.5px, transparent 1.5px 26px),
+        repeating-linear-gradient(-45deg, var(--skin) 0 1.5px, transparent 1.5px 26px),
+        var(--grad-fruit);
+}
+
+/* ---- Destination card ---- */
+.dest-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr));
+    gap: var(--space-5);
+}
+
+.dest-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dest-media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background-color: var(--fruit-100);
+}
+
+.dest-media img,
+.dest-media .img-placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* category tag sits on the photo's top-left corner */
+.dest-media .tag {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    box-shadow: var(--shadow-1);
+}
+
+.dest-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    flex: 1;
+    padding: var(--space-4) var(--space-4) var(--space-5);
+}
+
+.dest-body h3 {
+    margin: 0;
+    font-size: var(--text-lg);
+}
+
+.dest-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+}
+
+.dest-address {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-1);
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+
+.dest-address .icon {
+    margin-top: 2px;
+}
+
+.dest-desc {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--ink);
+}
+
+.rating {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-sm);
     font-weight: 600;
-    font-size: 0.95rem;
+    color: var(--ink);
+}
+
+.rating .icon {
+    color: var(--skin);
+}
+
+.rating-none {
+    font-weight: 500;
+    color: var(--muted);
+}
+
+
+/* =====================================================================
+   7. TAGS, BADGES, CHIPS
+   ===================================================================== */
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    flex-shrink: 0;
+    padding: 2px var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--fruit-100);
+    color: var(--skin-text);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+/* Small status labels: verified, yes/no in admin tables */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.badge-verified,
+.badge-yes {
+    background: var(--leaf-050);
+    color: var(--leaf-700);
+}
+
+.badge-no {
+    background: var(--surface-alt);
+    color: var(--muted);
+}
+
+/* ---- Chips: a row that scrolls sideways on small screens ---- */
+.chip-row {
+    display: flex;
+    gap: var(--space-2);
+    margin: 0 calc(-1 * var(--gutter));
+    padding: var(--space-1) var(--gutter) var(--space-3);
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    list-style: none;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+    min-height: var(--touch);
+    padding: 0 var(--space-4);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-decoration: none;
+    scroll-snap-align: start;
+    transition: border-color var(--fast) var(--ease), background-color var(--fast) var(--ease);
+}
+
+.chip:hover {
+    border-color: var(--leaf-500);
+    color: var(--ink);
+}
+
+/* Active chip: leaf-300 with dark ink text (6.4:1). Never white. */
+.chip[aria-current="page"] {
+    border-color: var(--leaf-300);
+    background: var(--leaf-300);
+    color: var(--ink);
+}
+
+.chip-count {
+    color: var(--muted);
+    font-weight: 500;
+}
+
+.chip[aria-current="page"] .chip-count {
+    color: var(--ink);
+}
+
+
+/* =====================================================================
+   8. FORMS
+   Structure: .field > label + control + .field-hint + .field-error
+   Fields are styled even without the classes, so every form matches.
+   ===================================================================== */
+form {
+    margin: 0;
+}
+
+.field {
+    margin-top: var(--space-4);
+}
+
+label,
+.field-label {
+    display: block;
+    margin-bottom: var(--space-1);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.optional {
+    font-weight: 400;
+    color: var(--muted);
 }
 
 input[type=text],
 input[type=email],
 input[type=password],
 input[type=number],
+input[type=search],
+input[type=url],
 select,
 textarea {
     width: 100%;
-    margin-top: 6px;
-    padding: 10px 12px;
-    border: 1.5px solid var(--line);
-    border-radius: 6px;
+    min-height: var(--touch);
+    padding: var(--space-2) var(--space-3);
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--radius-sm);
     background: var(--surface);
     font: inherit;
     color: var(--ink);
+    transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+}
+
+textarea {
+    resize: vertical;
+    line-height: 1.5;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+    border-color: var(--leaf-500);
 }
 
 input:focus,
 select:focus,
 textarea:focus {
-    border-color: var(--leaf);
-    outline: 3px solid var(--gold-soft);
+    outline: none;
+    border-color: var(--leaf-700);
+    box-shadow: 0 0 0 3px rgba(108, 140, 64, 0.35);
 }
 
-input[type=checkbox] {
-    width: 1.1em;
-    height: 1.1em;
-    margin-right: 8px;
-    accent-color: var(--leaf);
-    vertical-align: -2px;
+input:disabled,
+select:disabled,
+textarea:disabled {
+    background: var(--surface-alt);
+    color: var(--muted);
+    cursor: not-allowed;
 }
 
-.error {
-    margin-top: 6px;
-    font-size: 0.9rem;
-    color: var(--alert);
+/* Error state: red border + red ring, plus the message under the field */
+[aria-invalid="true"],
+[aria-invalid="true"]:hover {
+    border-color: var(--danger);
 }
 
-.success {
-    margin-bottom: 16px;
-    padding: 10px 14px;
-    border-left: 4px solid var(--leaf);
-    border-radius: 6px;
-    background: #e2f1e8;
-    color: var(--leaf-deep);
+[aria-invalid="true"]:focus {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.22);
 }
 
-/* ---- Tables (admin lists) ---- */
-table {
-    width: 100%;
-    margin-top: 14px;
-    border-collapse: collapse;
-}
-
-th {
-    padding: 8px 12px;
-    border-bottom: 2px solid var(--leaf);
-    text-align: left;
-    font-size: 0.85rem;
-    font-weight: 600;
+.field-hint {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-sm);
     color: var(--muted);
 }
 
-td {
-    padding: 12px;
-    border-bottom: 1px solid var(--line);
+/* .error is the older name; both look the same */
+.field-error,
+.error {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-1);
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--danger);
 }
 
-tbody tr:hover {
-    background: var(--frost);
+.field-error .icon {
+    margin-top: 2px;
 }
 
-.link-btn {
-    padding: 0;
-    border: 0;
-    background: none;
-    font: inherit;
-    color: var(--alert);
-    text-decoration: underline;
+/* Checkbox row: the whole row is the click target (44px tall) */
+.check {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--touch);
+    margin: var(--space-2) 0 0;
+    font-weight: 500;
     cursor: pointer;
 }
 
-/* ---- Home page: hero ----
-   The pineapple sits in the bottom-right corner of the hero, tilted to the left,
-   with only its top half (the leaves and upper fruit) showing. */
+input[type=checkbox] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    flex-shrink: 0;
+    accent-color: var(--leaf-700);
+    cursor: pointer;
+}
+
+.check-text small {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 400;
+    color: var(--muted);
+}
+
+.form-row {
+    display: grid;
+    gap: 0 var(--space-4);
+}
+
+@media (min-width: 560px) {
+    .form-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Older forms (label, input, label, input...) without .field wrappers */
+form > label {
+    margin-top: var(--space-4);
+}
+
+form > .btn {
+    margin-top: var(--space-5);
+}
+
+/* Buttons at the end of a form */
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--line);
+}
+
+
+/* =====================================================================
+   9. ALERTS & EMPTY STATES
+   ===================================================================== */
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+}
+
+.alert .icon {
+    margin-top: 2px;
+}
+
+.alert-body > :last-child {
+    margin-bottom: 0;
+}
+
+.alert-success {
+    background: var(--leaf-050);
+    border-color: #d5e0b8;
+    color: var(--leaf-900);
+}
+
+.alert-error {
+    background: var(--danger-050);
+    border-color: #f1c6c3;
+    color: var(--danger-dark);
+}
+
+.empty-state,
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-7) var(--space-5);
+    border: 1.5px dashed var(--line-strong);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    text-align: center;
+    color: var(--muted);
+}
+
+.empty-state .brand-mark {
+    margin-bottom: var(--space-3);
+}
+
+.empty-state h3 {
+    margin: 0;
+    color: var(--ink);
+}
+
+.empty-state p {
+    max-width: 36ch;
+    margin: 0;
+}
+
+.empty-state .btn {
+    margin-top: var(--space-3);
+}
+
+
+/* =====================================================================
+   10. TABLES (admin lists)
+   The wrapper scrolls sideways on small screens; the header row sticks
+   to the top while the rows scroll.
+   ===================================================================== */
+.table-wrap {
+    max-height: 70vh;
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: var(--text-sm);
+}
+
+th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: var(--space-3) var(--space-4);
+    background: var(--surface);
+    border-bottom: 2px solid var(--leaf-300);
+    text-align: left;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+td {
+    padding: var(--space-2) var(--space-4);
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+}
+
+tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+tbody tr:nth-child(even) td {
+    background: var(--surface-alt);
+}
+
+tbody tr:hover td {
+    background: #f3eed9;
+}
+
+.cell-strong {
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.cell-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.cell-actions {
+    white-space: nowrap;
+    text-align: right;
+}
+
+.row-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.row-actions form {
+    display: inline-flex;
+}
+
+.table-empty {
+    padding: var(--space-6);
+    text-align: center;
+    color: var(--muted);
+}
+
+
+/* =====================================================================
+   11. PAGES
+   ===================================================================== */
+
+/* ---- Home: hero ----
+   The pineapple sits in the bottom-right corner, tilted to the left,
+   with only its top half showing. */
 .hero {
     position: relative;
     overflow: hidden;              /* crops the pineapple at the bottom edge */
-    padding: clamp(32px, 7vw, 88px) clamp(16px, 4vw, 40px);
-    background: var(--leaf);
+    padding-block: clamp(var(--space-7), 8vw, 112px);
+    background: var(--grad-hero);
     color: #fff;
 }
 
 .hero-inner {
     position: relative;
     z-index: 1;                    /* keeps the text above the pineapple */
-    max-width: 1080px;
-    margin: 0 auto;
-    padding-right: 340px;          /* room so text never runs under the pineapple */
+}
+
+.hero-copy {
+    max-width: 36rem;
 }
 
 .hero h1 {
-    margin-bottom: 1rem;
-    font-size: clamp(2.2rem, 6vw, 3.9rem);
-    line-height: 1.08;
+    margin-bottom: var(--space-4);
+    font-size: var(--text-hero);
+    line-height: 1.04;
     color: #fff;
 }
 
 .hero p {
-    max-width: 34rem;
-    font-size: 1.15rem;
-    color: #cfe5dd;
+    font-size: var(--text-lg);
+    color: var(--on-dark);
 }
 
 .hero-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 8px;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
 }
 
 .hero-art {
     position: absolute;
     bottom: 0;
-    right: -140px;                 /* sits in the very corner; closer to 0 = more of it on screen */
+    right: -140px;                 /* closer to 0 = more of it on screen */
     width: 430px;
     max-width: none;
     /* translateY(50%) sinks half the pineapple below the edge;
-       rotate(-14deg) tilts it left (use a positive number to tilt right) */
+       rotate(-14deg) tilts it left */
     transform: translateY(50%) rotate(-14deg);
 }
 
-/* On phones: smaller and faded, peeking up from the bottom edge behind the text */
-@media (max-width: 760px) {
-    .hero-inner {
-        padding-right: 0;
-    }
+/* SVG gradient stops read the color tokens, so the drawing follows the palette */
+.hero-art .crown-1 { stop-color: var(--leaf-300); }
+.hero-art .crown-2 { stop-color: var(--leaf-500); }
+.hero-art .crown-3 { stop-color: var(--leaf-700); }
+.hero-art .fruit-1 { stop-color: var(--fruit-100); }
+.hero-art .fruit-2 { stop-color: var(--fruit-300); }
+.hero-art .fruit-3 { stop-color: var(--fruit-500); }
+.hero-art .fruit-4 { stop-color: var(--fruit-700); }
+.hero-art .lattice-line { stroke: var(--skin); }
+.hero-art .lattice-eye { fill: var(--skin); }
 
+/* On phones: smaller and faded, peeking up from behind the text */
+@media (max-width: 767px) {
     .hero-art {
         right: -60px;
-        width: 200px;
-        transform: translateY(50%) rotate(-14deg);
+        width: 220px;
         opacity: 0.35;
     }
 }
 
-/* ---- Home page and dashboard: lists of places ---- */
+/* ---- Home: sections ---- */
 .section {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 48px clamp(16px, 4vw, 40px);
+    padding-block: var(--space-7);
 }
 
+.section-head {
+    margin-bottom: var(--space-5);
+}
+
+.section-head p {
+    margin: 0;
+}
+
+/* ---- Older list style (admin dashboard, until it's converted) ---- */
 .places {
-    margin-top: 16px;
+    margin-top: var(--space-4);
     border-bottom: 1px solid var(--line);
 }
 
@@ -423,8 +1297,8 @@ tbody tr:hover {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    padding: 18px 12px;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-3);
     border-top: 1px solid var(--line);
 }
 
@@ -439,41 +1313,33 @@ tbody tr:hover {
 a.place {
     color: inherit;
     text-decoration: none;
+    transition: background-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
 }
 
 a.place:hover {
-    background: var(--surface);
+    background: var(--surface-alt);
+    box-shadow: inset 3px 0 0 var(--fruit-700);
 }
 
-.tag {
-    flex-shrink: 0;
-    padding: 3px 12px;
-    border-radius: 999px;
-    background: var(--gold-soft);
-    color: var(--skin);
-    font-size: 0.85rem;
-    font-weight: 600;
-}
 
-.empty {
-    margin-top: 16px;
-    padding: 24px;
-    border: 2px dashed var(--line);
-    border-radius: 12px;
-    color: var(--muted);
-}
-
-/* ---- Footer ---- */
-.site-footer {
-    padding: 28px 16px;
-    text-align: center;
-    font-size: 0.9rem;
-    color: var(--muted);
-}
-
-/* Respect people who turn off animations in their system settings */
+/* =====================================================================
+   12. MOTION: respect people who turn off animations in their settings
+   ===================================================================== */
 @media (prefers-reduced-motion: reduce) {
-    * {
-        transition: none !important;
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+
+    a.card:hover,
+    .card-lift:hover,
+    .btn:active {
+        transform: none;
     }
 }
