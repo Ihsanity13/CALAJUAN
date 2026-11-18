@@ -4,6 +4,9 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DestinationController;
 use App\Http\Controllers\Admin\DestinationImageController;
 use App\Http\Controllers\AuthController;
+// "as PublicDestinationController": the admin one above is also called
+// DestinationController, and one file can't import two classes with the same name.
+use App\Http\Controllers\DestinationController as PublicDestinationController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +15,11 @@ use Illuminate\Support\Facades\Route;
 // ->name('home') gives the route a nickname, so other code can write
 // route('home') instead of hard-coding the URL "/".
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// PUBLIC: one destination's page. {destination} is "route model binding":
+// Laravel finds the Destination with that id, or shows a 404 page if there's none.
+Route::get('/destinations/{destination}', [PublicDestinationController::class, 'show'])
+    ->name('destinations.show');
 
 // GUEST ONLY: the 'guest' middleware blocks people who are already
 // logged in. Registering or logging in twice makes no sense.

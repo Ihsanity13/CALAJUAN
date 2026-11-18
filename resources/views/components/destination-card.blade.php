@@ -28,7 +28,11 @@
     </div>
 
     <div class="dest-body">
-        <h3>{{ $destination->name }}</h3>
+        {{-- The name is the link. CSS (.dest-link::after) stretches its click area
+             over the whole card, so tapping anywhere on the card opens the page. --}}
+        <h3>
+            <a class="dest-link" href="{{ route('destinations.show', $destination) }}">{{ $destination->name }}</a>
+        </h3>
 
         <div class="dest-meta">
             @if ($destination->is_verified)

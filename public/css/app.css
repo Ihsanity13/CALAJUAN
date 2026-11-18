@@ -796,9 +796,38 @@ a.card:hover,
 }
 
 .dest-card {
+    position: relative;   /* the stretched link below fills this box */
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+
+/* The card's title link. Its ::after layer covers the whole card,
+   so the entire card is clickable while staying one simple link. */
+.dest-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.dest-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+.dest-link:hover {
+    color: var(--leaf-900);
+}
+
+/* keyboard focus: ring around the whole card, not just the title */
+.dest-link:focus-visible {
+    outline: none;
+}
+
+.dest-card:has(.dest-link:focus-visible) {
+    outline: 3px solid var(--leaf-700);
+    outline-offset: 2px;
 }
 
 .dest-media {
@@ -1585,6 +1614,194 @@ tbody tr:hover td {
 .hero-art .fruit-4 { stop-color: var(--fruit-700); }
 .hero-art .lattice-line { stroke: var(--skin); }
 .hero-art .lattice-eye { fill: var(--skin); }
+
+/* ---- Destination detail page ---- */
+.detail {
+    padding-top: var(--space-4);
+    padding-bottom: var(--space-7);
+}
+
+.detail-media {
+    position: relative;
+    margin-top: var(--space-2);
+}
+
+/* "Save" heart, top-right over the photo */
+.save-btn {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--touch);
+    padding: 0 var(--space-4);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: var(--shadow-2);
+    cursor: pointer;
+    transition: background-color var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+
+.save-btn:hover {
+    background: var(--leaf-050);
+    color: var(--leaf-900);
+}
+
+.detail-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: var(--space-5) 0 var(--space-6);
+}
+
+.detail-head h1 {
+    margin: var(--space-1) 0 0;
+}
+
+.detail-rating {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+}
+
+.detail-rating .rating-star {
+    color: var(--skin);
+}
+
+.detail-grid {
+    display: grid;
+    gap: var(--space-6);
+}
+
+.detail-section + .detail-section {
+    margin-top: var(--space-7);
+}
+
+.detail-section h2 {
+    margin-bottom: var(--space-4);
+}
+
+.heading-count {
+    font-family: var(--font-body);
+    font-size: var(--text-lg);
+    color: var(--muted);
+}
+
+.detail-text {
+    max-width: 65ch;
+    font-size: var(--text-lg);
+    line-height: 1.7;
+}
+
+.location-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-5);
+}
+
+.location-card h2 {
+    margin: 0;
+    font-size: var(--text-xl);
+}
+
+.map-view {
+    position: relative;
+    z-index: 0;
+    isolation: isolate;   /* keep Leaflet's layers under the header and tab bar */
+    height: 220px;
+    border-radius: var(--radius-md);
+    background: var(--surface-alt);
+}
+
+@media (min-width: 900px) {
+    .detail-grid {
+        grid-template-columns: minmax(0, 1fr) 340px;
+        align-items: start;
+    }
+
+    /* the Location card stays in view while the reviews scroll */
+    .detail-aside {
+        position: sticky;
+        top: var(--space-5);
+    }
+}
+
+/* ---- Reviews ---- */
+.review-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.review {
+    padding: var(--space-4) 0;
+    border-top: 1px solid var(--line);
+}
+
+.review:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.review-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.review-head .review-stars {
+    margin-left: auto;
+}
+
+.review-avatar {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--fruit-100);
+    color: var(--skin-text);
+    font-weight: 700;
+}
+
+.review-name {
+    margin: 0;
+    font-weight: 600;
+}
+
+.review-date {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+
+.review-comment {
+    max-width: 65ch;
+    margin: var(--space-3) 0 0;
+}
+
+.stars {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.star-on {
+    color: var(--skin);
+}
+
+.star-off {
+    color: var(--line-strong);
+}
 
 /* ---- Auth pages (login, register): centered card ---- */
 .auth-head {
