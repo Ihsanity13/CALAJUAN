@@ -30,7 +30,6 @@
             <thead>
                 <tr>
                     <th scope="col">Name</th>
-                    <th scope="col">Icon</th>
                     <th scope="col" class="cell-num">Destinations</th>
                     <th scope="col" class="cell-actions"><span class="sr-only">Actions</span></th>
                 </tr>
@@ -40,7 +39,6 @@
                 @forelse ($categories as $category)
                     <tr>
                         <td class="cell-strong">{{ $category->name }}</td>
-                        <td>{{ $category->icon }}</td>
                         {{-- destinations_count was added by withCount() in the controller. --}}
                         <td class="cell-num">{{ $category->destinations_count }}</td>
                         <td class="cell-actions">
@@ -69,7 +67,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="table-empty">
+                        <td colspan="3" class="table-empty">
                             No categories yet. <a href="{{ route('admin.categories.create') }}">Add the first one</a>.
                         </td>
                     </tr>

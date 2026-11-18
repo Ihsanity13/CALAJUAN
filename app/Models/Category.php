@@ -11,7 +11,7 @@ class Category extends Model
     // MASS ASSIGNMENT: only these columns may be filled in bulk,
     // e.g. Category::create($request->all()). Anything not listed here
     // (like id) is ignored, which protects against users sneaking in extra fields.
-    protected $fillable = ['name', 'icon'];
+    protected $fillable = ['name'];
 
     // RELATIONSHIP: one category has many destinations.
     // Lets you write $category->destinations to get them all.
