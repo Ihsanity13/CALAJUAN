@@ -48,8 +48,6 @@ class CategoryRequest extends FormRequest
                     }
                 },
             ],
-            // nullable: the icon may be left empty
-            'icon' => ['nullable', 'string', 'max:50'],
         ];
     }
 }

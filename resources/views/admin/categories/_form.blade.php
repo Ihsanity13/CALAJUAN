@@ -7,8 +7,6 @@
 
 <x-input name="name" label="Name" :value="old('name', $category->name ?? '')" required autofocus />
 
-<x-input name="icon" label="Icon" optional :value="old('icon', $category->icon ?? '')" />
-
 <div class="form-actions">
     <button type="submit" class="btn">
         <x-icon name="check" size="18" />
