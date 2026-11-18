@@ -1,6 +1,6 @@
 {{-- DESTINATION CARD: used on the home page now, and later on Explore and Saved.
      Usage: <x-destination-card :destination="$destination" />
-     Expects the destination loaded with: category, primaryImage,
+     Expects the destination loaded with: category, primaryImage, interests,
      withAvg('reviews', 'rating'), withCount('reviews'). --}}
 @props(['destination'])
 
@@ -61,6 +61,18 @@
             <x-icon name="map-pin" size="16" />
             {{ $destination->address ?? 'Calauan, Laguna' }}
         </p>
+
+        {{-- EXPERIENCES: up to 3 colored pills, then "+2" for the rest --}}
+        @if ($destination->relationLoaded('interests') && $destination->interests->isNotEmpty())
+            <ul class="interest-list interest-list-sm" role="list" aria-label="Experiences">
+                @foreach ($destination->interests->take(3) as $interest)
+                    <x-interest-pill :interest="$interest" tag="li" />
+                @endforeach
+                @if ($destination->interests->count() > 3)
+                    <li class="interest-pill interest-more">+{{ $destination->interests->count() - 3 }}<span class="sr-only"> more</span></li>
+                @endif
+            </ul>
+        @endif
 
         @if ($destination->description)
             <p class="dest-desc">{{ \Illuminate\Support\Str::limit($destination->description, 110) }}</p>

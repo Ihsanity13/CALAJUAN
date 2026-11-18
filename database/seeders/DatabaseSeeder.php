@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -30,6 +31,25 @@ class DatabaseSeeder extends Seeder
             'password' => 'password',
             'role' => 'admin',
         ]);
+
+        // A business owner, for trying the /business pages and the approval queue
+        $owner = User::forceCreate([
+            'name' => 'Test Owner',
+            'email' => 'owner@calajuan.test',
+            'password' => 'password',
+            'role' => 'owner',
+        ]);
+
+        // Already verified, so the test owner can add places right away
+        $owner->ownerVerification()->create([
+            'business_name' => 'Test Business',
+            'category_id' => Category::where('name', 'Café')->value('id'),
+            'business_address' => 'Calauan, Laguna',
+            'business_phone' => '0917 000 0000',
+            'applicant_role' => 'owner',
+            'registration_type' => 'dti',
+            'registration_number' => 'TEST-0001',
+        ])->forceFill(['status' => 'approved', 'reviewed_at' => now()])->save();
 
         User::forceCreate([
             'name' => 'Test User',

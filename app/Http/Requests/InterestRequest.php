@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Interest;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 // Validation for the interest form (same rules as categories: a unique name).
 class InterestRequest extends FormRequest
@@ -37,6 +38,8 @@ class InterestRequest extends FormRequest
                     }
                 },
             ],
+            // The pill color: one of the names in Interest::COLORS
+            'color' => ['required', Rule::in(array_keys(Interest::COLORS))],
         ];
     }
 }

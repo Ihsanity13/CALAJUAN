@@ -12,6 +12,15 @@
         <h1>Edit destination</h1>
     </div>
 
+    {{-- An owner's changes are waiting: editing here doesn't touch them --}}
+    @if ($destination->pendingChange)
+        <x-alert type="warning" class="form-notice">
+            {{ $destination->owner?->name ?? 'The owner' }} sent changes to this place that are waiting for approval.
+            <a href="{{ route('admin.approvals.changes.show', $destination->pendingChange) }}">Review them</a>.
+            Edits you save here go live right away.
+        </x-alert>
+    @endif
+
     {{-- @method('PUT') makes the browser's POST arrive as an update request. --}}
     <form method="POST" action="{{ route('admin.destinations.update', $destination) }}" enctype="multipart/form-data" novalidate>
         @method('PUT')

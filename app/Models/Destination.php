@@ -14,6 +14,13 @@ use Illuminate\Support\Facades\Storage;
 
 class Destination extends Model
 {
+    // APPROVAL STATUS: owners' new places start as pending; only approved ones are public
+    public const STATUS_PENDING = 'pending';
+
+    public const STATUS_APPROVED = 'approved';
+
+    public const STATUS_REJECTED = 'rejected';
+
     // Calauan's time zone, for "Open now". The app itself runs in UTC.
     public const TIMEZONE = 'Asia/Manila';
 
@@ -54,9 +61,46 @@ class Destination extends Model
             'is_hot' => 'boolean',
             'is_new' => 'boolean',
             'price_level' => 'integer',
+            'reviewed_at' => 'datetime',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
         ];
+    }
+
+    // QUERY SCOPE: only the places the public may see (approved by an admin).
+    // Every public list must use this: Destination::approved()->...
+    public function scopeApproved(Builder $query): Builder
+    {
+        return $query->where('status', self::STATUS_APPROVED);
+    }
+
+    // ADMIN LIST FILTERS: ?show=featured etc. on the destinations list.
+    // Featured / Hot / New count live places only (the same as the dashboard numbers).
+    public const LIST_FILTERS = [
+        'live' => 'Live',
+        'featured' => '⭐ Featured',
+        'hot' => '🔥 Hot',
+        'new' => '✨ New',
+        'pending' => 'Waiting for approval',
+        'rejected' => 'Not approved',
+    ];
+
+    public function scopeListFilter(Builder $query, ?string $filter): Builder
+    {
+        return match ($filter) {
+            'live' => $query->approved(),
+            'featured' => $query->approved()->where('is_featured', true),
+            'hot' => $query->approved()->where('is_hot', true),
+            'new' => $query->approved()->where('is_new', true),
+            'pending' => $query->where('status', self::STATUS_PENDING),
+            'rejected' => $query->where('status', self::STATUS_REJECTED),
+            default => $query,   // no filter: everything
+        };
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === self::STATUS_APPROVED;
     }
 
     // QUERY SCOPE: a reusable, named piece of a query.
@@ -87,11 +131,12 @@ class Destination extends Model
         return $this->hasMany(DestinationHour::class)->orderBy('day');
     }
 
-    // RELATIONSHIP: one destination has many photos.
+    // RELATIONSHIP: the LIVE photos (not the ones waiting in a change request).
     // Sorted with the primary photo first, then in upload order.
     public function images(): HasMany
     {
         return $this->hasMany(DestinationImage::class)
+            ->whereNull('destination_change_id')
             ->orderByDesc('is_primary')
             ->orderBy('id');
     }
@@ -99,7 +144,40 @@ class Destination extends Model
     // RELATIONSHIP: the one primary photo (the cover shown on cards), or null.
     public function primaryImage(): HasOne
     {
-        return $this->hasOne(DestinationImage::class)->where('is_primary', true);
+        return $this->hasOne(DestinationImage::class)
+            ->whereNull('destination_change_id')
+            ->where('is_primary', true);
+    }
+
+    // RELATIONSHIP: the business owner who manages this place (null = admins only)
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    // RELATIONSHIP: the admin who last approved or rejected this place
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    // RELATIONSHIP: every change request ever submitted for this place
+    public function changes(): HasMany
+    {
+        return $this->hasMany(DestinationChange::class);
+    }
+
+    // RELATIONSHIP: the change waiting for approval, or null (there's at most one)
+    public function pendingChange(): HasOne
+    {
+        return $this->hasOne(DestinationChange::class)->where('status', DestinationChange::STATUS_PENDING);
+    }
+
+    // RELATIONSHIP: the most recent change request, whatever its status
+    // (the owner's list uses it to show "Changes rejected: reason")
+    public function latestChange(): HasOne
+    {
+        return $this->hasOne(DestinationChange::class)->latestOfMany();
     }
 
     // When a destination is deleted, the database removes its photo rows
